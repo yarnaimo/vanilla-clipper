@@ -1,0 +1,33 @@
+{
+  "main": "dist/index.js",
+  "scripts": {
+    "ts-node": "ts-node",
+    "dev": "ts-node src/index.ts",
+    "test": "NODE_ENV=test jest -w1",
+    "build": "tsc",
+    "start": "NODE_ENV=production node dist/index.js"
+  },
+  "jest": {
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest"
+    },
+    "testEnvironment": "node",
+    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/dist/"
+    ],
+    "collectCoverage": true,
+    "collectCoverageFrom": [
+      "src/**/*.ts?(x)"
+    ],
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json",
+      "node"
+    ]
+  }
+}

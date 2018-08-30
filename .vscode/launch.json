@@ -1,0 +1,37 @@
+{
+    // IntelliSense を使用して利用可能な属性を学べます。
+    // 既存の属性の説明をホバーして表示します。
+    // 詳細情報は次を確認してください: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Debug index.ts",
+            "runtimeArgs": [
+                "-r",
+                "ts-node/register"
+            ],
+            "args": [
+                "${workspaceFolder}/src/index.ts"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Jest Current",
+            "runtimeExecutable": "yarn",
+            "runtimeArgs": [
+                "run",
+                "test"
+            ],
+            "args": [
+                "${relativeFile}",
+                "--coverage",
+                "false"
+            ],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+        }
+    ]
+}
