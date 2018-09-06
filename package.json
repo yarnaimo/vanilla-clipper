@@ -1,6 +1,7 @@
 {
   "main": "dist/index.js",
   "scripts": {
+    "postinstall": "typesync && yarn --ignore-scripts",
     "ts-node": "ts-node",
     "dev": "ts-node src/index.ts",
     "test": "NODE_ENV=test jest -w1",
