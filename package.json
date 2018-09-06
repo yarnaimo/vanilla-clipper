@@ -4,7 +4,6 @@
   "author": "yamaimo <yarnaimo@gmail.com>",
   "main": "dist/index.js",
   "scripts": {
-    "postinstall": "typesync && yarn --ignore-scripts",
     "test": "NODE_ENV=test jest",
     "ts-node": "ts-node",
     "dev": "ts-node src/index.ts",
