@@ -5,10 +5,11 @@
   "main": "dist/index.js",
   "scripts": {
     "postinstall": "typesync && yarn --ignore-scripts",
+    "test": "NODE_ENV=test jest",
     "ts-node": "ts-node",
     "dev": "ts-node src/index.ts",
-    "test": "NODE_ENV=test jest",
     "build": "tsc",
+    "prepublish": "tsc",
     "start": "NODE_ENV=production node dist/index.js"
   },
   "jest": {
