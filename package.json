@@ -4,23 +4,14 @@
   "author": "yamaimo <yarnaimo@gmail.com>",
   "main": "dist/index.js",
   "scripts": {
-    "test": "NODE_ENV=test jest",
-    "ts-node": "ts-node",
-    "dev": "ts-node src/index.ts",
     "build": "tsc",
+    "dev": "ts-node src/index.ts",
     "prepublish": "tsc",
-    "start": "NODE_ENV=production node dist/index.js"
+    "start": "NODE_ENV=production node dist/index.js",
+    "test": "NODE_ENV=test jest",
+    "ts-node": "ts-node"
   },
   "jest": {
-    "transform": {
-      "^.+\\.tsx?$": "ts-jest"
-    },
-    "testEnvironment": "node",
-    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
-    "testPathIgnorePatterns": [
-      "/node_modules/",
-      "/dist/"
-    ],
     "collectCoverage": true,
     "collectCoverageFrom": [
       "src/**/*.ts?(x)"
@@ -32,6 +23,15 @@
       "jsx",
       "json",
       "node"
-    ]
+    ],
+    "testEnvironment": "node",
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/dist/"
+    ],
+    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest"
+    }
   }
 }
