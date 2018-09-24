@@ -25,7 +25,8 @@
             "sourceMapPathOverrides": { "/mnt/c/*": "C:\\*" },
             "env": {
                 "NODE_ENV": "test"
-            }
+            },
+            "outputCapture": "std"
             // "console": "integratedTerminal",
             // "internalConsoleOptions": "neverOpen"
         }
