@@ -7,31 +7,27 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Debug index.ts",
-            "runtimeArgs": [
-                "-r",
-                "ts-node/register"
-            ],
-            "args": [
-                "${workspaceFolder}/src/index.ts"
-            ]
+            "name": "Debug Server",
+            "useWSL": true,
+            "runtimeArgs": ["-r", "ts-node/register"],
+            "args": ["src/index.ts"],
+            "sourceMapPathOverrides": { "/mnt/c/*": "C:\\*" }
         },
         {
             "type": "node",
             "request": "launch",
             "name": "Jest Current",
-            "runtimeExecutable": "yarn",
-            "runtimeArgs": [
-                "run",
-                "test"
-            ],
-            "args": [
-                "${relativeFile}",
-                "--coverage",
-                "false"
-            ],
-            "console": "integratedTerminal",
-            "internalConsoleOptions": "neverOpen",
+            "useWSL": true,
+            "sourceMaps": true,
+            "runtimeArgs": ["-r", "ts-node/register", "--nolazy"],
+            "program": "${workspaceFolder}/node_modules/jest/bin/jest",
+            "args": ["--runInBand", "${relativeFile}", "--coverage", "false"],
+            "sourceMapPathOverrides": { "/mnt/c/*": "C:\\*" },
+            "env": {
+                "NODE_ENV": "test"
+            }
+            // "console": "integratedTerminal",
+            // "internalConsoleOptions": "neverOpen"
         }
     ]
 }
