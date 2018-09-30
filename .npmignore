@@ -19,6 +19,7 @@ tmp
 .DS_Store
 Thumbs.db
 
+.cache
 .env
 config
 coverage
