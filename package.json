@@ -13,6 +13,10 @@
     "ts-node": "ts-node"
   },
   "lint-staged": {
+    "./package.json": [
+      "sort-package-json",
+      "git add"
+    ],
     "*.{js,ts,css,scss,vue,gql,md}": [
       "prettier --write --ignore-path .gitignore",
       "git add"
