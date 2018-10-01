@@ -6,9 +6,16 @@
   "scripts": {
     "build": "tsc",
     "dev": "ts-node src/index.ts",
-    "prepublish": "tsc",
+    "precommit": "lint-staged",
+    "prepare": "yarn run build",
     "start": "NODE_ENV=production node dist/index.js",
     "test": "NODE_ENV=test jest",
     "ts-node": "ts-node"
+  },
+  "lint-staged": {
+    "*.{js,ts,css,scss,vue,gql,md}": [
+      "prettier --write --ignore-path .gitignore",
+      "git add"
+    ]
   }
 }
