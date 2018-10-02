@@ -4,13 +4,24 @@
     "target": "es2018",
     "module": "commonjs",
     "lib": [
+      "dom",
+      "dom.iterable",
       "es2018"
     ],
-    "skipLibCheck": true,
-    "sourceMap": true,
     "declaration": true,
+    "sourceMap": true,
     "outDir": "dist",
     "strict": true,
+    "baseUrl": "./",
+    "paths": {
+      "*": [
+        "node_modules/@types/*",
+        "src/@types/*"
+      ],
+      "~/*": [
+        "src/*"
+      ]
+    },
     "esModuleInterop": true,
     "experimentalDecorators": true
   },
