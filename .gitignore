@@ -21,6 +21,7 @@ Thumbs.db
 
 .cache
 .env
+.nuxt
 config
 coverage
 dist/**/*
