@@ -23,6 +23,10 @@
         "src/*"
       ]
     },
+    "types": [
+      "@types/node",
+      "@types/jest"
+    ],
     "esModuleInterop": true,
     "experimentalDecorators": true
   },
