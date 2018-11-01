@@ -6,6 +6,7 @@ read -p 'echo "GitHub repository » "' -c yarnaimo/$project_name repository
 
 git clone --depth=1 git@github.com:yarnaimo/tss.git $project_name
 cd $project_name
+rm tss.fish
 rm -rf .git
 git init
 git remote add origin git@github.com:$repository.git
