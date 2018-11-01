@@ -10,7 +10,7 @@
     "prepare": "yarn run build",
     "start": "NODE_ENV=production node dist/index.js",
     "test": "NODE_ENV=test jest",
-    "ts-node": "ts-node"
+    "ts-node": "ts-node -r tsconfig-paths/register"
   },
   "lint-staged": {
     "./package.json": [
