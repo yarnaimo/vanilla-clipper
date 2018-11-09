@@ -21,8 +21,11 @@ Thumbs.db
 
 .cache
 .env
+.firebase
 .nuxt
 config
 coverage
 dist/**/*
 node_modules
+public
+sw.*
