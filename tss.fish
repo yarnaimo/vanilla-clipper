@@ -21,7 +21,7 @@ echo $package_json \
  > package.json
 
 yarn add config js-yaml
-yarn add -D typescript ts-node tsconfig-paths jest ts-jest @types/node prettier lint-staged husky sort-package-json
+yarn add -D typescript ts-node tsconfig-paths jest ts-jest tsconfig-paths-jest @types/node prettier lint-staged husky sort-package-json
 typesync
 yarn
 
