@@ -1,6 +1,7 @@
 module.exports = {
     collectCoverage: true,
     collectCoverageFrom: ['src/**/*.ts?(x)'],
+    coveragePathIgnorePatterns: ['/__tests__/'],
     moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
     setupTestFrameworkScriptFile: './jest.setup.js',
     testEnvironment: 'node',
