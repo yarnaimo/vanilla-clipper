@@ -5,9 +5,9 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
-    "dev": "ts-node src/index.ts",
+    "dev": "yarn ts-node src/index.ts",
     "precommit": "lint-staged",
-    "prepare": "yarn run build",
+    "prepare": "yarn build",
     "start": "NODE_ENV=production node dist/index.js",
     "test": "NODE_ENV=test jest",
     "ts-node": "ts-node -r tsconfig-paths/register"
