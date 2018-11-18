@@ -5,12 +5,16 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
-    "precommit": "lint-staged",
     "dev": "yarn ts-node src/index.ts",
     "prepare": "yarn build",
     "start": "NODE_ENV=production node dist/index.js",
     "test": "NODE_ENV=test jest",
     "ts-node": "ts-node -r tsconfig-paths/register"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
   },
   "lint-staged": {
     "./package.json": [
