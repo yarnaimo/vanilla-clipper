@@ -5,8 +5,8 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
-    "dev": "yarn ts-node src/index.ts",
     "precommit": "lint-staged",
+    "dev": "yarn ts-node src/index.ts",
     "prepare": "yarn build",
     "start": "NODE_ENV=production node dist/index.js",
     "test": "NODE_ENV=test jest",
