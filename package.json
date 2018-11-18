@@ -17,7 +17,7 @@
       "sort-package-json",
       "git add"
     ],
-    "*.{js,ts,css,scss,vue,gql,md}": [
+    "*.{js,jsx,ts,tsx,css,scss,vue,gql,md}": [
       "prettier --write --ignore-path .gitignore",
       "git add"
     ]
