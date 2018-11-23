@@ -7,7 +7,7 @@
     "build": "tsc",
     "dev": "yarn ts-node src/index.ts",
     "prepare": "yarn build",
-    "start": "NODE_ENV=production node dist/index.js",
+    "start": "NODE_ENV=production node -r tsconfig-paths/register dist/index.js",
     "test": "NODE_ENV=test jest",
     "ts-node": "ts-node -r tsconfig-paths/register"
   },
