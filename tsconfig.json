@@ -22,7 +22,9 @@
     },
     "types": [
       "@types/node",
-      "@types/jest"
+      "@types/jest",
+      "@types/expect-puppeteer",
+      "@types/jest-environment-puppeteer"
     ],
     "esModuleInterop": true,
     "experimentalDecorators": true
