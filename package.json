@@ -1,7 +1,7 @@
 {
-  "name": "@yarnaimo/vanilla",
+  "name": "vanilla-clipper",
   "version": "0.0.0",
-  "repository": "github:yarnaimo/vanilla",
+  "repository": "github:yarnaimo/vanilla-clipper",
   "license": "MIT",
   "author": "yamaimo <yarnaimo@gmail.com>",
   "main": "dist/index.js",
