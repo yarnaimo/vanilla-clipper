@@ -9,6 +9,6 @@ beforeAll(() => {
     return new Promise(resolve => server.listen(3000, resolve))
 })
 
-afterAll(() => {
-    server.close()
+afterAll(done => {
+    server.close(done)
 })

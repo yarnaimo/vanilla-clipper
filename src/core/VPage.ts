@@ -1,87 +1,57 @@
-import { Rarray } from '@yarnaimo/rain'
-import { get } from 'got'
-import { ElementHandle, EvaluateFn, Page } from 'puppeteer'
+import { Page } from 'puppeteer-core'
 import { getDomain } from 'tldjs'
-import {
-    commentOutError,
-    DataItem,
-    generateFullHTML,
-    generateScriptString,
-    getAsDataURL,
-} from '../utils'
-import { Handler } from './Handler'
+import { convert } from '../convert'
+import { clonedDocumentPlugins } from '../plugins/clonedDocument'
+import { originalDocumentPlugins } from '../plugins/originalDocument'
+import { generateFullHTML } from '../utils'
+import { VDocument } from './VDocument'
 import { VMetadata } from './VMetadata'
 
 export class VPage {
-    static async create(page: Page, clone = true) {
-        const vPage = new this(page)
-        vPage.originalHandle = await vPage.evaluateHandleAsElement(() => document)
-
-        if (clone) {
-            vPage.clonedHandle = await vPage.evaluateHandleAsElement(() => document.cloneNode(true))
-        }
-        return vPage
+    static async create(page: Page) {
+        return new this(page, await VDocument.create(page, () => document))
     }
 
-    originalHandle!: ElementHandle<Element>
+    public clonedDocument!: VDocument
 
-    clonedHandle!: ElementHandle<Element>
+    private constructor(public page: Page, public originalDocument: VDocument) {}
 
-    private constructor(public page: Page) {}
-
-    private async evaluateHandleAsElement(fn: EvaluateFn) {
-        const handle = await this.page.evaluateHandle(fn)
-        return handle.asElement()!
+    async clone() {
+        this.clonedDocument = await VDocument.create(this.page, () => document.cloneNode(true))
     }
 
     async close() {
         return this.page.close()
     }
 
-    async eval<T, A extends any[]>(
-        cloned: boolean,
-        fn: (document: Document, ...args: A) => T,
-        ...args: A
-    ) {
-        const result = await this.page.evaluate(
-            fn as any,
-            cloned ? this.clonedHandle : this.originalHandle,
-            ...args
-        )
-        return result as T
-    }
-
     async clip() {
-        const styleSheets = await this.eval(false, Handler.getStyleSheets)
-        const cssTexts = await Rarray.waitAll(styleSheets, async ({ link, text, error }) => {
-            if (error) return commentOutError(error)
-            if (text) return text
+        const sheetDataList = await this.originalDocument.getSheetDataList()
 
-            const { body } = await get(link!).catch(error => ({ body: commentOutError(error) }))
-            return body
-        })
+        await originalDocumentPlugins.exec(this.originalDocument)
+        await this.clone()
+        await clonedDocumentPlugins.exec(this.clonedDocument)
 
-        await this.eval(true, Handler.clean)
-        await this.eval(true, Handler.reallocateCSS, cssTexts)
+        const location = await this.clonedDocument.eval(() => document.location!)
 
-        const dataListUrls = await this.eval(true, Handler.data)
-        const dataList = await Rarray.waitAll(dataListUrls, async url => {
-            try {
-                const dataURL = await getAsDataURL(url)
-                return [url, dataURL] as DataItem
-            } catch (error) {
-                return [url, ''] as DataItem
-            }
-        })
+        await Promise.all([
+            (async () => {
+                const cssTexts = await convert.sheetDataListToTexts(sheetDataList, location.href)
+                await this.clonedDocument.reallocateCSS(cssTexts)
+            })(),
 
-        await this.eval(true, Handler.appendScript, generateScriptString(dataList))
+            (async () => {
+                const dataSourceUrls = await this.clonedDocument.data()
 
-        const doctype = await this.eval(true, d =>
-            new XMLSerializer().serializeToString(d.doctype!)
-        )
-        const html = await this.eval(true, d => d.documentElement!.outerHTML)
-        const location = await this.eval(true, d => document.location!)
-        const title = await this.eval(true, d => d.title)
+                const dataList = await convert.dataSourceUrlsToDataList(dataSourceUrls)
+                await this.clonedDocument.appendScript(convert.dataListToScriptString(dataList))
+            })(),
+        ])
+
+        const { doctype, html, title } = await this.clonedDocument.eval(d => ({
+            doctype: new XMLSerializer().serializeToString(d.doctype!),
+            html: d.documentElement!.outerHTML,
+            title: d.title,
+        }))
 
         const vMetadata = new VMetadata()
         vMetadata.set({

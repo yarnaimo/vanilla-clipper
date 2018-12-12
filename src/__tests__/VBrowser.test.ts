@@ -4,7 +4,7 @@ import { VPage } from '../core/VPage'
 let vBrowser: VBrowser
 
 beforeAll(async () => {
-    vBrowser = await VBrowser.launch(true)
+    vBrowser = await VBrowser.launch(true, { executablePath: undefined })
 })
 
 afterAll(async () => {
