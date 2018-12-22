@@ -2,11 +2,11 @@ import { outputFile } from 'fs-extra'
 import { DateTime } from 'luxon'
 import { join } from 'path'
 import yargs from 'yargs'
-import { VBrowser, VPage } from '..'
+import { VBrowser } from '..'
 import { filenamifyUrl, sig } from '../utils'
 
 export const clip = async () => {
-    const { _: urls, noSandbox, directory, userDataDir, headless } = yargs
+    const { _: urls, noSandbox, directory, accountLabel, userDataDir, headless } = yargs
         .option('no-sandbox', {
             alias: 'n',
             boolean: true,
@@ -24,6 +24,12 @@ export const clip = async () => {
             default: '.',
             desc: 'Output directory',
         })
+        .option('account-label', {
+            alias: 'a',
+            string: true,
+            default: 'default',
+            desc: 'Account label',
+        })
         .option('user-data-dir', {
             alias: 'u',
             string: true,
@@ -35,15 +41,18 @@ export const clip = async () => {
         const dateString = DateTime.local().toFormat('yyyyMMdd')
 
         const vBrowser = await VBrowser.launch(noSandbox, { userDataDir, headless })
+        const vPage = await vBrowser.newPage()
 
         const successCount = await urls.reduce(async (prevPromise, url, i) => {
             const _successCount = await prevPromise
             const outputPath = join(directory, `${dateString}-${filenamifyUrl(url)}.html`)
-            sig.await('[%d/%d] Cilpping %s', i + 1, urls.length, url)
+            sig.pending('[%d/%d] Cilpping %s', i + 1, urls.length, url)
 
-            let vPage: VPage | undefined
+            // let vPage: VPage | undefined
             try {
-                vPage = await vBrowser.newPage(url)
+                // vPage = await vBrowser.newPage(url, accountLabel)
+                await vPage.login(url, accountLabel)
+                await vPage.goto(url)
                 const { html } = await vPage.clip()
 
                 await outputFile(outputPath, html)
@@ -52,10 +61,10 @@ export const clip = async () => {
             } catch (error) {
                 sig.error(error)
                 return _successCount
-            } finally {
-                if (vPage) await vPage.close()
             }
         }, Promise.resolve(0))
+
+        await vPage.close()
 
         if (successCount)
             sig.complete('Clipped %d page%s', successCount, successCount === 1 ? '' : 's')

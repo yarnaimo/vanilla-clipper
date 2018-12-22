@@ -1,17 +1,18 @@
 import { VDocument } from '../core/VDocument'
+import { VPage } from '../core/VPage'
 
 let vDocument: VDocument
 
 beforeEach(async () => {
     await page.goto('http://localhost:3000/page.html')
-    vDocument = await VDocument.create(page, () => document)
+    vDocument = await VDocument.create(new VPage(page), () => document)
 })
 
-test('.clean()', async () => {
-    await vDocument.clean()
-    const received = await page.$$eval('script, style, link[rel=stylesheet]', els => els)
-    expect(received).toHaveLength(0)
-})
+// test('.clean()', async () => {
+//     await vDocument.clean()
+//     const received = await page.$$eval('script, style, link[rel=stylesheet]', els => els)
+//     expect(received).toHaveLength(0)
+// })
 
 test('.getStyleSheets()', async () => {
     const received = await vDocument.getSheetDataList()
@@ -21,19 +22,19 @@ test('.getStyleSheets()', async () => {
     ])
 })
 
-test('.reallocateCSS()', async () => {
-    const css = ['.reallocated {}']
-    await page.$$eval('style, link[rel=stylesheet]', els => els.forEach(el => el.remove()))
-    await vDocument.reallocateCSS(css)
+// test('.reallocateCSS()', async () => {
+//     const css = ['.reallocated {}']
+//     await page.$$eval('style, link[rel=stylesheet]', els => els.forEach(el => el.remove()))
+//     await vDocument.reallocateCSS(css)
 
-    const received = await page.$$eval('head > style[data-vanilla-clipper-style]', els =>
-        els.map(el => el.innerHTML)
-    )
-    expect(received).toEqual(css)
-})
+//     const received = await page.$$eval('head > style[data-vanilla-clipper-style]', els =>
+//         els.map(el => el.innerHTML)
+//     )
+//     expect(received).toEqual(css)
+// })
 
 test('.data()', async () => {
-    const received = await vDocument.data()
+    const received = await vDocument.getDataSourceURLs()
     expect(received).toContain('http://localhost:3000/icon.png')
 })
 

@@ -1,10 +1,11 @@
 import { VBrowser } from '../core/VBrowser'
 import { VPage } from '../core/VPage'
+import { launch } from './utils'
 
 let vBrowser: VBrowser
 
 beforeAll(async () => {
-    vBrowser = await VBrowser.launch(true, { executablePath: undefined })
+    vBrowser = await launch()
 })
 
 afterAll(async () => {

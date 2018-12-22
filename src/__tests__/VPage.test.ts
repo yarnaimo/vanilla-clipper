@@ -1,27 +1,30 @@
 import { readFile } from 'fs-extra'
 import { resolve } from 'path'
-import { Page } from 'puppeteer-core'
+import { Frame, Page } from 'puppeteer-core'
 import { VBrowser } from '../core/VBrowser'
 import { VMetadata } from '../core/VMetadata'
+import { launch } from './utils'
 
 let vBrowser: VBrowser
 let metadata: VMetadata
 let html: string
 let savedPage: Page
+let childFrame: Frame
 
 beforeAll(async () => {
-    vBrowser = await VBrowser.launch(true, { executablePath: undefined })
+    vBrowser = await launch()
     const vPage = await vBrowser.newPage('http://localhost:3000/page.html')
     const clipped = await vPage.clip()
     await vPage.close()
 
-    metadata = clipped.metadata
+    metadata = clipped.metadata!
     html = clipped.html
 })
 
 beforeEach(async () => {
-    savedPage = (await vBrowser.newPage()).page
+    savedPage = (await vBrowser.newPage()).frame
     await savedPage.setContent(html)
+    childFrame = savedPage.frames()[1]
 })
 
 afterEach(async () => {
@@ -43,7 +46,7 @@ test('metadata', async () => {
     })
 })
 
-test('element counts', async () => {
+test('element count', async () => {
     await expect(
         savedPage.$$('link[rel=stylesheet], [src]:not([data-vanilla-clipper-src]):not(a)')
     ).resolves.toHaveLength(0)
@@ -72,4 +75,16 @@ test('set [src] attribute from dataMap', async () => {
     const iconBuffer = await readFile(resolve('src/__tests__/public/icon.png'))
 
     expect(src).toBe('data:image/png;base64,' + iconBuffer.toString('base64'))
+})
+
+test('iframe - element count', async () => {
+    await expect(
+        childFrame.$$('link[rel=stylesheet], [src]:not([data-vanilla-clipper-src]):not(a)')
+    ).resolves.toHaveLength(0)
+
+    await expect(childFrame.$$('head style[data-vanilla-clipper-style]')).resolves.toHaveLength(2)
+    await expect(childFrame.$$('body script[data-vanilla-clipper-script]')).resolves.toHaveLength(1)
+    await expect(
+        childFrame.$$('body img[data-vanilla-clipper-src="http://localhost:3000/icon.png"]')
+    ).resolves.toHaveLength(1)
 })

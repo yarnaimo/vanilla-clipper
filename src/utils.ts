@@ -1,10 +1,10 @@
 import { isNot } from '@yarnaimo/rain'
 import * as chromeFinder from 'chrome-launcher/dist/chrome-finder'
 import { getPlatform } from 'chrome-launcher/dist/utils'
+import * as css from 'css'
 import got from 'got'
 import * as sig from 'signale'
-import { VMetadata } from './core/VMetadata'
-export { got, sig, filenamifyUrl }
+export { css, got, sig, filenamifyUrl }
 const filenamifyUrl = require('filenamify-url') as (url: string, options?: any) => string
 
 export const noSandboxArgs = ['--no-sandbox', '--disable-setuid-sandbox']
@@ -30,16 +30,6 @@ export const findChrome = () => {
 
 export const commentOutError = (error: Error) => `/* ${error.toString()} */`
 
-export const generateFullHTML = (doctype: string, html: string, vMetadata: VMetadata) => {
-    return `${doctype}
-<!--Clipped with vanilla-clipper-->
-<!--vanilla-clipper-metadata: ${vMetadata.stringify()}-->
-${html}`
-}
-
-export const extractVanillaMetadata = (fullHTML: string) => {
-    const m = fullHTML.match(/^<!--vanilla-clipper-metadata: ({\n[\s\S]+?\n})-->/)
-    if (!m) return null
-
-    return m && m[1]
-}
+export const getBySelectors = (document: Document) => (...selectors: string[]) => [
+    ...document.querySelectorAll<HTMLElement>(selectors.join(', ')),
+]
