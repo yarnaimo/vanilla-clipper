@@ -3,8 +3,10 @@ import { config } from '../config'
 import { VFrame } from './VFrame'
 
 export class VPage extends VFrame {
-    constructor(public frame: Page, public url: string = 'about:blank') {
-        super(frame, url)
+    isRoot = true
+
+    constructor(public frame: Page) {
+        super(frame)
     }
 
     async close() {

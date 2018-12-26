@@ -1,7 +1,7 @@
-import { optimizeCSS } from '../core/page-utils'
-import { css } from '../utils'
+import csstree from 'css-tree'
+import { optimizeCSS } from '../utils/css'
 
-describe('optimizeCSS', () => {
+describe('optimizeCSS()', () => {
     test('extract woff2 and local', () => {
         expect(
             optimizeCSS(`@font-face {
@@ -14,8 +14,8 @@ describe('optimizeCSS', () => {
                     url('/fonts/awesome.eot') format('embedded-opentype');
             }`)
         ).toBe(
-            css.stringify(
-                css.parse(`@font-face {
+            csstree.generate(
+                csstree.parse(`@font-face {
                     font-family: 'Awesome Font';
                     src: local('Awesome Font'), url('/fonts/awesome.woff2') format('woff2');
                 }`)
@@ -33,10 +33,10 @@ describe('optimizeCSS', () => {
                     url('/fonts/awesome.eot') format('embedded-opentype');
             }`)
         ).toBe(
-            css.stringify(
-                css.parse(`@font-face {
+            csstree.generate(
+                csstree.parse(`@font-face {
                     font-family: 'Awesome Font';
-                    src: url('/fonts/awesome.woff') format('woff');
+                    src: url(/fonts/awesome.woff) format('woff');
                 }`)
             )
         )

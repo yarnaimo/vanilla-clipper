@@ -1,60 +1,91 @@
+import { Rarray } from '@yarnaimo/rain'
+import { JSDOM } from 'jsdom'
 import { Frame, Page } from 'puppeteer-core'
 import { getDomain } from 'tldjs'
-import { plugins } from '../plugins'
+import { jsdomPlugins } from '../plugins'
+import { extractURLsFromCSSTexts, optimizeCSS } from '../utils/css'
 import {
     dataListToScriptString,
-    dataSourceUrlsToDataList,
+    dataSourceURLsToDataList,
     extractOrFetchCSSText,
-    extractURLsInCSSText,
-    generateFullHTML,
-    getHTMLStringOfIFrame,
-    optimizeCSS,
-} from './page-utils'
+} from '../utils/data'
+import {
+    appendScriptToHead,
+    embedIFrameContents,
+    moveAttrToDatasetAndReturnURLs,
+} from '../utils/document'
+import { createElementFinder, getVAttrSelector } from '../utils/element'
+import { generateFullHTML } from '../utils/html'
 import { VDocument } from './VDocument'
 import { VMetadata } from './VMetadata'
 
 export class VFrame {
-    constructor(public frame: Frame | Page, public url: string = 'about:blank') {}
+    isRoot = false
 
-    async clip({ minify = true, isRoot = true } = {}) {
+    constructor(public frame: Frame | Page) {}
+
+    async clip({ minify = true, selector = undefined as string | undefined } = {}) {
         const originalDocument = await VDocument.create(this, () => document)
-        const location = await originalDocument.eval(d => d.location!)
+        await originalDocument.setUuidToIFrames()
+
+        const { doctype, html: originalHTML, title, location } = await originalDocument.eval(d => ({
+            doctype: d.doctype ? new XMLSerializer().serializeToString(d.doctype) : undefined,
+            html: d.documentElement.outerHTML,
+            title: d.title,
+            location: d.location,
+        }))
         const sheetDataList = await originalDocument.getSheetDataList()
-        await plugins.exec(originalDocument) // clean
+
+        const { window } = new JSDOM(originalHTML, { url: location.href })
+        const finder = createElementFinder(window.document)
+
+        if (selector) {
+            const el = window.document.body.querySelector(selector)
+            if (el) window.document.body.innerHTML = el.outerHTML
+        }
+        jsdomPlugins.exec(window.document)
 
         await Promise.all([
             (async () => {
-                const iFrameHandles = await originalDocument.getIFrameHandles()
+                const iframes = finder(getVAttrSelector.iframeUuid())
+                const iframeUuidsToClip = iframes.map(el => el.dataset.vanillaClipperIframeUuid!)
 
-                const vFrameHTMLs = await getHTMLStringOfIFrame(iFrameHandles)
-                await originalDocument.setIFramesSrcdoc(vFrameHTMLs, iFrameHandles)
+                const iframeDataList = await Rarray.waitAll(iframeUuidsToClip, async uuid => {
+                    try {
+                        const handle = await originalDocument.$(getVAttrSelector.iframeUuid(uuid))
+
+                        const frame = await handle!.contentFrame()
+                        const vFrame = new VFrame(frame!)
+                        const { html } = await vFrame.clip()
+                        return { uuid, html }
+                    } catch (error) {
+                        return { uuid, html: '' }
+                    }
+                })
+
+                embedIFrameContents(finder, iframeDataList)
             })(),
 
             (async () => {
+                const urlsInAttrs = moveAttrToDatasetAndReturnURLs(finder)
+
                 const cssTexts = await extractOrFetchCSSText(sheetDataList)
                 const optimizedCSSTexts = cssTexts.map(optimizeCSS)
+                const urlsInCSSTexts = extractURLsFromCSSTexts(optimizedCSSTexts)
 
-                const dataSourceURLs = await Promise.all([
-                    originalDocument.getDataSourceURLs(),
-                    extractURLsInCSSText(optimizedCSSTexts),
-                ])
-
-                const dataList = await dataSourceUrlsToDataList(dataSourceURLs, location.href)
-                await originalDocument.appendScript(
-                    dataListToScriptString(dataList, optimizedCSSTexts)
+                const dataList = await dataSourceURLsToDataList(
+                    [urlsInCSSTexts, urlsInAttrs],
+                    location.href
                 )
+
+                const scriptString = dataListToScriptString(dataList, optimizedCSSTexts)
+                appendScriptToHead(window.document, scriptString)
             })(),
         ])
 
-        const { doctype, html, title } = await originalDocument.eval(d => ({
-            doctype: d.doctype ? new XMLSerializer().serializeToString(d.doctype) : undefined,
-            html: d.documentElement!.outerHTML,
-            title: d.title,
-        }))
-
         let vMetadata: VMetadata | undefined
 
-        if (isRoot) {
+        if (this.isRoot) {
             vMetadata = new VMetadata()
             vMetadata.set({
                 domain: getDomain(location.href) || location.hostname,
@@ -66,7 +97,12 @@ export class VFrame {
         }
 
         return {
-            html: generateFullHTML({ doctype, html, vMetadata, minify }),
+            html: generateFullHTML({
+                doctype,
+                html: window.document.documentElement.outerHTML,
+                vMetadata,
+                minify,
+            }),
             metadata: vMetadata,
         }
     }

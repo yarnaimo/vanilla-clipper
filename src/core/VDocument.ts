@@ -15,6 +15,11 @@ export class VDocument {
         return result as T
     }
 
+    async $(selector: string) {
+        const result = await this.documentHandle.$(selector)
+        return result
+    }
+
     async $$(selector: string) {
         const result = await this.documentHandle.$$(selector)
         return result
@@ -40,72 +45,19 @@ export class VDocument {
         })
     }
 
-    getIFrameHandles() {
-        return this.$$('iframe')
-    }
-
-    setIFramesSrcdoc(vFrameHTMLs: string[], elements: ElementHandle[]) {
-        return this.eval(
-            (document, vFrameHTMLs, ...elements) => {
-                elements.forEach((el, i) => {
-                    el.srcdoc = vFrameHTMLs[i]
-                    el.dataset.vanillaClipperSrc = el.src
-                    el.removeAttribute('src')
+    setUuidToIFrames() {
+        this.eval(document => {
+            function uuidv4() {
+                return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                    var r = (Math.random() * 16) | 0,
+                        v = c == 'x' ? r : (r & 0x3) | 0x8
+                    return v.toString(16)
                 })
-            },
-            vFrameHTMLs,
-            ...((elements as any) as HTMLIFrameElement[])
-        )
-    }
+            }
 
-    async getDataSourceURLs() {
-        const urls = await this.eval(document => {
-            const elements = document.querySelectorAll<HTMLElement>(
-                [
-                    "[src]:not([src='']):not(iframe)",
-
-                    [
-                        '[href=""]',
-                        'a',
-                        '[rel~=alternate]',
-                        '[rel~=canonical]',
-                        '[rel~=prev]',
-                        '[rel~=next]',
-                    ].reduce((prev, current) => `${prev}:not(${current})`, '[href]'),
-                ].join()
-            )
-
-            const urls = [...elements].reduce(
-                (_urls, el) => {
-                    const { src, href } = el as any
-
-                    if (src) {
-                        _urls.push(src)
-                        el.dataset.vanillaClipperSrc = src
-                        el.removeAttribute('src')
-                    }
-                    if (href) {
-                        _urls.push(href)
-                        el.dataset.vanillaClipperHref = href
-                        el.removeAttribute('href')
-                    }
-                    return _urls
-                },
-                [] as string[]
-            )
-
-            return urls
+            document.querySelectorAll('iframe').forEach(el => {
+                el.dataset.vanillaClipperIframeUuid = uuidv4()
+            })
         })
-
-        return new Set(urls)
-    }
-
-    appendScript(scriptString: string) {
-        return this.eval((document, scriptString) => {
-            const el = document.createElement('script')
-            el.dataset.vanillaClipperScript = ''
-            el.innerHTML = scriptString
-            document.head.appendChild(el)
-        }, scriptString)
     }
 }

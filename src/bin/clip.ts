@@ -2,11 +2,20 @@ import { outputFile } from 'fs-extra'
 import { DateTime } from 'luxon'
 import { join } from 'path'
 import yargs from 'yargs'
-import { VBrowser } from '..'
-import { filenamifyUrl, sig } from '../utils'
+import { devices, filenamifyUrl, VBrowser } from '..'
+import { sig } from '../utils'
 
 export const clip = async () => {
-    const { _: urls, noSandbox, directory, accountLabel, userDataDir, headless } = yargs
+    const {
+        _: urls,
+        noSandbox,
+        directory,
+        accountLabel,
+        userDataDir,
+        headless,
+        selector,
+        emulate: deviceName,
+    } = yargs
         .option('no-sandbox', {
             alias: 'n',
             boolean: true,
@@ -30,6 +39,16 @@ export const clip = async () => {
             default: 'default',
             desc: 'Account label',
         })
+        .option('emulate', {
+            alias: 'e',
+            string: true,
+            desc: 'Emulate a device (Defined in `puppeteer-core/DeviceDescriptors`)',
+        })
+        .option('selector', {
+            alias: 's',
+            string: true,
+            desc: 'Selector for a HTML element to extract (It may break the layout)',
+        })
         .option('user-data-dir', {
             alias: 'u',
             string: true,
@@ -39,21 +58,20 @@ export const clip = async () => {
 
     try {
         const dateString = DateTime.local().toFormat('yyyyMMdd')
+        const device = devices[deviceName]
 
         const vBrowser = await VBrowser.launch(noSandbox, { userDataDir, headless })
-        const vPage = await vBrowser.newPage()
+        const vPage = await vBrowser.newPage({ device })
 
         const successCount = await urls.reduce(async (prevPromise, url, i) => {
             const _successCount = await prevPromise
             const outputPath = join(directory, `${dateString}-${filenamifyUrl(url)}.html`)
             sig.pending('[%d/%d] Cilpping %s', i + 1, urls.length, url)
 
-            // let vPage: VPage | undefined
             try {
-                // vPage = await vBrowser.newPage(url, accountLabel)
                 await vPage.login(url, accountLabel)
                 await vPage.goto(url)
-                const { html } = await vPage.clip()
+                const { html } = await vPage.clip({ selector })
 
                 await outputFile(outputPath, html)
                 sig.success('Saved as %s', outputPath)

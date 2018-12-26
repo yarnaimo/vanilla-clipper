@@ -1,5 +1,14 @@
-import { VDocument } from '../core/VDocument'
-import { VPlugin } from '../types'
+import { createElementFinder } from '../utils/element'
+
+export type VPlugin = (
+    getElements: ReturnType<typeof createElementFinder>,
+    document: Document
+) => void
+
+export interface VPluginStore {
+    beforeLoad: VPlugin[]
+    afterLoad: VPlugin[]
+}
 
 export class VPluginStore {
     plugins: VPlugin[] = []
@@ -8,10 +17,8 @@ export class VPluginStore {
         this.plugins.push(vPlugin)
     }
 
-    async exec(vDocument: VDocument) {
-        await this.plugins.reduce(async (prevPromise, plugin) => {
-            await prevPromise
-            await plugin(vDocument)
-        }, Promise.resolve())
+    exec(document: Document) {
+        const finder = createElementFinder(document)
+        this.plugins.forEach(plugin => plugin(finder, document))
     }
 }

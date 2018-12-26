@@ -16,3 +16,8 @@ export interface VPluginStore {
     beforeLoad: VPlugin[]
     afterLoad: VPlugin[]
 }
+
+export interface IFrameData {
+    uuid: string
+    html: string
+}

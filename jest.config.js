@@ -1,10 +1,10 @@
 module.exports = {
-    preset: 'jest-puppeteer',
     collectCoverage: true,
     collectCoverageFrom: ['src/**/*.ts?(x)'],
     coveragePathIgnorePatterns: ['/__tests__/'],
     moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
     setupTestFrameworkScriptFile: './jest.setup.js',
+    testEnvironment: 'node',
     testPathIgnorePatterns: ['/node_modules/', '/dist/'],
     testRegex: '((\\.|/)(test|spec))\\.(jsx?|tsx?)$',
     transform: {

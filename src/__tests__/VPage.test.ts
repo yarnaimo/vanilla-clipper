@@ -1,9 +1,9 @@
 import { readFile } from 'fs-extra'
-import { resolve } from 'path'
 import { Frame, Page } from 'puppeteer-core'
 import { VBrowser } from '../core/VBrowser'
 import { VMetadata } from '../core/VMetadata'
-import { launch } from './utils'
+import { getVAttrSelector } from '../utils/element'
+import { launch, publicFilePath, servedFileURL } from './utils'
 
 let vBrowser: VBrowser
 let metadata: VMetadata
@@ -13,7 +13,7 @@ let childFrame: Frame
 
 beforeAll(async () => {
     vBrowser = await launch()
-    const vPage = await vBrowser.newPage('http://localhost:3000/page.html')
+    const vPage = await vBrowser.newPage({ url: servedFileURL('page.html') })
     const clipped = await vPage.clip()
     await vPage.close()
 
@@ -41,25 +41,25 @@ test('metadata', async () => {
         _version: 1,
         domain: 'localhost',
         hostname: 'localhost',
-        url: 'http://localhost:3000/page',
+        url: servedFileURL('page'),
         title: 'Vanilla Test',
     })
 })
 
 test('element count', async () => {
     await expect(
-        savedPage.$$('link[rel=stylesheet], [src]:not([data-vanilla-clipper-src]):not(a)')
+        savedPage.$$(`link[rel=stylesheet], [src]:not(${getVAttrSelector.src()}):not(a)`)
     ).resolves.toHaveLength(0)
 
-    await expect(savedPage.$$('head style[data-vanilla-clipper-style]')).resolves.toHaveLength(2)
-    await expect(savedPage.$$('body script[data-vanilla-clipper-script]')).resolves.toHaveLength(1)
+    await expect(savedPage.$$(`head style${getVAttrSelector.style()}`)).resolves.toHaveLength(2)
+    await expect(savedPage.$$(`head script${getVAttrSelector.script()}`)).resolves.toHaveLength(1)
     await expect(
-        savedPage.$$('body img[data-vanilla-clipper-src="http://localhost:3000/icon.png"]')
+        savedPage.$$(`body img${getVAttrSelector.src(servedFileURL('icon.png'))}`)
     ).resolves.toHaveLength(1)
 })
 
 test('style[data-vanilla-clipper-style] content', async () => {
-    const texts = await savedPage.$$eval('head style[data-vanilla-clipper-style]', els =>
+    const texts = await savedPage.$$eval(`head style${getVAttrSelector.style()}`, els =>
         els.map(el => el.innerHTML)
     )
     expect(texts).toEqual([
@@ -69,22 +69,22 @@ test('style[data-vanilla-clipper-style] content', async () => {
 })
 
 test('set [src] attribute from dataMap', async () => {
-    const src = await savedPage.$eval('img[data-vanilla-clipper-src]', img =>
+    const src = await savedPage.$eval(`img${getVAttrSelector.src()}`, img =>
         img.getAttribute('src')
     )
-    const iconBuffer = await readFile(resolve('src/__tests__/public/icon.png'))
+    const iconBuffer = await readFile(publicFilePath('icon.png'))
 
     expect(src).toBe('data:image/png;base64,' + iconBuffer.toString('base64'))
 })
 
 test('iframe - element count', async () => {
     await expect(
-        childFrame.$$('link[rel=stylesheet], [src]:not([data-vanilla-clipper-src]):not(a)')
+        childFrame.$$(`link[rel=stylesheet], [src]:not(${getVAttrSelector.src()}):not(a)`)
     ).resolves.toHaveLength(0)
 
-    await expect(childFrame.$$('head style[data-vanilla-clipper-style]')).resolves.toHaveLength(2)
-    await expect(childFrame.$$('body script[data-vanilla-clipper-script]')).resolves.toHaveLength(1)
+    await expect(childFrame.$$(`head style${getVAttrSelector.style()}`)).resolves.toHaveLength(2)
+    await expect(childFrame.$$(`head script${getVAttrSelector.script()}`)).resolves.toHaveLength(1)
     await expect(
-        childFrame.$$('body img[data-vanilla-clipper-src="http://localhost:3000/icon.png"]')
+        childFrame.$$(`body img${getVAttrSelector.src(servedFileURL('icon.png'))}`)
     ).resolves.toHaveLength(1)
 })

@@ -1,6 +1,6 @@
 import { Field, ModelBase } from '@yarnaimo/rain'
 import { IsInstance, IsNumber, IsString, ValidateNested } from 'class-validator'
-import { FieldLuxon } from './FieldLuxon'
+import { FieldLuxon } from '../field/Luxon'
 
 export interface IMetadata {
     _version: number

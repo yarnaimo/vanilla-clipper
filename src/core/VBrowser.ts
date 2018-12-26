@@ -1,6 +1,6 @@
 import { isNot } from '@yarnaimo/rain'
 import { ensureDir } from 'fs-extra'
-import { Browser, launch, LaunchOptions } from 'puppeteer-core'
+import { Browser, EmulateOptions, launch, LaunchOptions } from 'puppeteer-core'
 import { config } from '../config'
 import { findChrome, noSandboxArgs, sig } from '../utils'
 import { VPage } from './VPage'
@@ -48,8 +48,14 @@ export class VBrowser {
         return cookies
     }
 
-    async newPage(url?: string, label?: string) {
+    async newPage({
+        url,
+        label,
+        device,
+    }: { url?: string; label?: string; device?: EmulateOptions } = {}) {
         const vPage = new VPage(await this.browser.newPage())
+
+        if (device) await vPage.frame.emulate(device)
         if (url) {
             const cookies = await this.login(vPage, url, label)
             await vPage.goto(url)
