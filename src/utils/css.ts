@@ -1,15 +1,9 @@
-import { Rstring } from '@yarnaimo/rain'
 import csstree from 'css-tree'
+import { resolve } from 'url'
 import { extractExtensionFromURL } from '.'
+import { dataURLPattern } from './data'
 
-export const cssURLPattern = /([:,\s]\s*url)\s*\((?!\s*['"]?data:.+,)\s*['"]?(\S+?)['"]?\s*\)/gi
-
-export function extractURLsFromCSSTexts(cssTexts: string[]) {
-    return cssTexts.reduce((urls, text) => {
-        Rstring.globalMatch(text, cssURLPattern).forEach(match => urls.add(match[2]))
-        return urls
-    }, new Set<string>())
-}
+export const cssURLPattern = /([:,\s]\s*url)\s*\((?!\s*data:.+,)\s*(\S+?)\s*\)/gi
 
 const fontFormats = {
     woff2: 'woff2',
@@ -38,7 +32,7 @@ function extractFontsFromValue(value: csstree.Value) {
         [[]] as csstree.CssNode[][]
     )
 
-    const local = [] as string[]
+    const local = [] as csstree.FunctionNode[]
     const remote = [] as RemoteFont[]
 
     chunks.forEach(chunk => {
@@ -48,15 +42,12 @@ function extractFontsFromValue(value: csstree.Value) {
         const localNode = functionNodes.find(node => node.name === 'local')
         const formatNode = functionNodes.find(node => node.name === 'format')
         const urlNode = chunk.find(
-            (node): node is csstree.Url => node.type === 'Url' && !/data:.+,/.test(node.value.value)
+            (node): node is csstree.Url =>
+                node.type === 'Url' && !dataURLPattern.test(node.value.value)
         )
 
         if (localNode) {
-            const data = localNode.children.first()
-
-            if (data && data.type === 'String') {
-                local.push(`local(${data.value})`)
-            }
+            local.push(localNode)
             return
         }
 
@@ -86,10 +77,39 @@ function extractFontsFromValue(value: csstree.Value) {
     return { local, remote }
 }
 
-export function optimizeCSS(text: string) {
+export function optimizeCSS(text: string, currentURL: string) {
+    const doubleQuote = '"'
+    const singleQuote = "'"
+
+    const urls = new Set<string>()
     const ast = csstree.parse(text)
 
     csstree.walk(ast, node => {
+        if (node.type === 'Url') {
+            const { value } = node.value
+
+            const relativeURL =
+                value.startsWith(doubleQuote) && value.endsWith(doubleQuote)
+                    ? value.slice(1, -1).replace(/\\"/g, doubleQuote)
+                    : value.startsWith(singleQuote) && value.endsWith(singleQuote)
+                    ? value.slice(1, -1).replace(/\\'/g, singleQuote)
+                    : value
+
+            const absoluteURL = resolve(currentURL, relativeURL)
+            node.value.value = absoluteURL
+        }
+    })
+
+    csstree.walk(ast, node => {
+        if (node.type === 'Url') {
+            const { value } = node.value
+
+            if (!dataURLPattern.test(value)) {
+                urls.add(value)
+            }
+            return
+        }
+
         if (node.type === 'Atrule' && node.name === 'font-face' && node.block) {
             const { base, local, remote } = node.block.children.toArray().reduce(
                 ({ base, local, remote }, line) => {
@@ -110,64 +130,56 @@ export function optimizeCSS(text: string) {
                     }
                 },
                 {
-                    base: [] as (csstree.CssNode)[],
-                    local: [] as string[],
+                    base: [] as csstree.CssNode[],
+                    local: [] as csstree.FunctionNode[],
                     remote: [] as RemoteFont[],
                 }
             )
 
-            const filteredRemotes = remote
-                .sort((a, b) => {
-                    return (
-                        (fontFormatNames.indexOf(a.formatName) + 1 || 9) -
-                        (fontFormatNames.indexOf(b.formatName) + 1 || 9)
-                    )
-                })
-                .filter((_, i) => i === 0)
-                .map(r => `url(${r.path}) format('${r.formatName}')`)
+            const optimalRemote = remote.sort((a, b) => {
+                return (
+                    (fontFormatNames.indexOf(a.formatName) + 1 || 9) -
+                    (fontFormatNames.indexOf(b.formatName) + 1 || 9)
+                )
+            })[0] as RemoteFont | undefined
+
+            const optimalRemoteNodes: csstree.CssNode[] = optimalRemote
+                ? [
+                      {
+                          type: 'Url',
+                          value: { type: 'Raw', value: optimalRemote.path },
+                      },
+                      { type: 'WhiteSpace', value: ' ' },
+                      {
+                          type: 'Function',
+                          name: 'format',
+                          children: new csstree.List<csstree.CssNode>().fromArray([
+                              { type: 'String', value: `'${optimalRemote.formatName}'` },
+                          ]),
+                      },
+                  ]
+                : []
+
+            const chunks = [...local.map(l => [l]), optimalRemoteNodes]
+
+            const children = chunks.reduce((list, chunk) => {
+                if (list.getSize()) list.appendData({ type: 'Operator', value: ',' })
+
+                chunk.forEach(node => list.appendData(node))
+                return list
+            }, new csstree.List<csstree.CssNode>())
 
             node.block.children.fromArray([
-                ...base,
-                csstree.fromPlainObject({
+                {
                     type: 'Declaration',
                     property: 'src',
                     important: false,
-                    value: { type: 'Raw', value: [...local, ...filteredRemotes].join(',') },
-                }),
+                    value: { type: 'Value', children },
+                },
+                ...base,
             ])
         }
     })
 
-    return csstree.generate(ast)
-
-    // const parsed = css.parse(text, { silent: true })
-    // if (!parsed.stylesheet) return ''
-
-    // const optimizedRules = parsed.stylesheet.rules
-    //     .filter(rule => rule.type !== 'rule' || isNot.undefined((rule as any).declarations))
-    //     .map(rule => {
-    //         const filteredRemotes = remote
-    //             .sort((a, b) => {
-    //                 return (
-    //                     (fontFormatNames.indexOf(a.formatName) + 1 || 9) -
-    //                     (fontFormatNames.indexOf(b.formatName) + 1 || 9)
-    //                 )
-    //             })
-    //             .filter((_, i) => i === 0)
-    //             .map(r => `url('${r.path.replace(/'/g, "\\'")}') format('${r.formatName}')`)
-
-    //         return {
-    //             ...rule,
-    //             declarations: [
-    //                 ...base,
-    //                 {
-    //                     type: 'declaration',
-    //                     property: 'src',
-    //                     value: [...local, ...filteredRemotes].join(', '),
-    //                 },
-    //             ],
-    //         }
-    //     })
-
-    // return css.stringify({ ...parsed, stylesheet: { ...parsed.stylesheet, rules: optimizedRules } })
+    return { text: csstree.generate(ast), urls }
 }

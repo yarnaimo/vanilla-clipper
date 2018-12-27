@@ -1,4 +1,5 @@
 import { IFrameData } from '../types'
+import { dataURLPattern } from './data'
 import { ElementFinder, getVAttrSelector } from './element'
 
 export function embedIFrameContents(finder: ElementFinder, iframeDataList: IFrameData[]) {
@@ -18,8 +19,9 @@ export function moveAttrToDatasetAndReturnURLs(finder: ElementFinder) {
     {
         finder({ selector: '[src]', not: ['[src=""]', 'iframe'] }).forEach(el => {
             const url = el.getAttribute('src')!
-            el.removeAttribute('src')
+            if (dataURLPattern.test(url)) return
 
+            el.removeAttribute('src')
             el.dataset.vanillaClipperSrc = url
             urlsInAttrs.add(url)
         })
@@ -29,6 +31,7 @@ export function moveAttrToDatasetAndReturnURLs(finder: ElementFinder) {
             not: [
                 '[href=""]',
                 'a',
+                'div',
                 '[rel~=alternate]',
                 '[rel~=canonical]',
                 '[rel~=prev]',
@@ -36,8 +39,9 @@ export function moveAttrToDatasetAndReturnURLs(finder: ElementFinder) {
             ],
         }).forEach(el => {
             const url = el.getAttribute('href')!
-            el.removeAttribute('href')
+            if (dataURLPattern.test(url)) return
 
+            el.removeAttribute('href')
             el.dataset.vanillaClipperHref = url
             urlsInAttrs.add(url)
         })

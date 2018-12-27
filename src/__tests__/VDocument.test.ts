@@ -25,8 +25,8 @@ beforeEach(async () => {
 test('#getSheetDataList()', async () => {
     const result = await vDocument.getSheetDataList()
     expect(result).toEqual([
-        { link: servedFileURL('main.css') },
-        { text: expect.stringMatching(/\.style-tag/) },
+        { type: 'link', link: servedFileURL('main.css') },
+        { type: 'text', text: expect.stringMatching(/\.style-tag/) },
     ])
 })
 

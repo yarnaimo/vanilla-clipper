@@ -8,7 +8,12 @@ const isTest = process.env.NODE_ENV === 'test'
 const puppeteer = require(isTest ? 'puppeteer' : 'puppeteer-core')
 
 export class VBrowser {
-    static async launch(noSandbox = false, options: LaunchOptions = {}) {
+    static async launch(
+        noSandbox = false,
+        { args = [], ...options }: LaunchOptions = {},
+        lang?: string
+    ) {
+        if (lang) args.push(`--lang=${lang}`)
         let executablePath: string | undefined
         let userDataDir: string | undefined
 
@@ -30,7 +35,7 @@ export class VBrowser {
             executablePath,
             userDataDir,
             ...options,
-            args: [...(options.args || []), ...(noSandbox ? noSandboxArgs : [])],
+            args: [...args, ...(noSandbox ? noSandboxArgs : [])],
         })
 
         return new VBrowser(browser)

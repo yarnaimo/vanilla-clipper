@@ -38,7 +38,9 @@ test('moveAttrToDatasetAndReturnURLs()', () => {
         <html>
             <body>
                 <img src="${src}" />
+                <img src="data:image/png;base64," />
                 <link href="${href}"></a>
+                <link href="data:text/css;base64,"></a>
             </body>
         </html>
     `)

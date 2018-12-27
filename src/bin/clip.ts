@@ -9,6 +9,7 @@ export const clip = async () => {
     const {
         _: urls,
         noSandbox,
+        language,
         directory,
         accountLabel,
         userDataDir,
@@ -26,6 +27,11 @@ export const clip = async () => {
             boolean: true,
             default: true,
             desc: 'Headless mode',
+        })
+        .option('language', {
+            alias: 'l',
+            string: true,
+            desc: 'Browser language',
         })
         .option('directory', {
             alias: 'd',
@@ -60,7 +66,7 @@ export const clip = async () => {
         const dateString = DateTime.local().toFormat('yyyyMMdd')
         const device = devices[deviceName]
 
-        const vBrowser = await VBrowser.launch(noSandbox, { userDataDir, headless })
+        const vBrowser = await VBrowser.launch(noSandbox, { userDataDir, headless }, language)
         const vPage = await vBrowser.newPage({ device })
 
         const successCount = await urls.reduce(async (prevPromise, url, i) => {

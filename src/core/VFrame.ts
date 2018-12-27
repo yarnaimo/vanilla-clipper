@@ -3,12 +3,7 @@ import { JSDOM } from 'jsdom'
 import { Frame, Page } from 'puppeteer-core'
 import { getDomain } from 'tldjs'
 import { jsdomPlugins } from '../plugins'
-import { extractURLsFromCSSTexts, optimizeCSS } from '../utils/css'
-import {
-    dataListToScriptString,
-    dataSourceURLsToDataList,
-    extractOrFetchCSSText,
-} from '../utils/data'
+import { dataListToScriptString, dataSourceURLsToDataList, extractOrFetchCSS } from '../utils/data'
 import {
     appendScriptToHead,
     embedIFrameContents,
@@ -69,16 +64,14 @@ export class VFrame {
             (async () => {
                 const urlsInAttrs = moveAttrToDatasetAndReturnURLs(finder)
 
-                const cssTexts = await extractOrFetchCSSText(sheetDataList)
-                const optimizedCSSTexts = cssTexts.map(optimizeCSS)
-                const urlsInCSSTexts = extractURLsFromCSSTexts(optimizedCSSTexts)
+                const sheets = await extractOrFetchCSS(sheetDataList, location.href)
 
                 const dataList = await dataSourceURLsToDataList(
-                    [urlsInCSSTexts, urlsInAttrs],
+                    [sheets.urls, urlsInAttrs],
                     location.href
                 )
 
-                const scriptString = dataListToScriptString(dataList, optimizedCSSTexts)
+                const scriptString = dataListToScriptString(dataList, sheets.texts)
                 appendScriptToHead(window.document, scriptString)
             })(),
         ])

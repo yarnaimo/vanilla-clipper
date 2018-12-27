@@ -2,21 +2,31 @@ import { Rarray } from '@yarnaimo/rain'
 import { resolve } from 'url'
 import { commentOutError, got } from '.'
 import { DataListItem, StyleSheetData } from '../types'
-import { cssURLPattern } from './css'
+import { cssURLPattern, optimizeCSS } from './css'
 import { getVAttrSelector } from './element'
 
-export async function extractOrFetchCSSText(sheetDataList: StyleSheetData[]) {
-    return await Rarray.waitAll(sheetDataList, async ({ link, text, error }) => {
-        try {
-            if (error) throw error
-            if (text) return text
+export const dataURLPattern = /^data:[\w\/\+]+(?:;.*)?,/
 
-            const { body } = await got.get(link!)
-            return body
+export async function extractOrFetchCSS(sheetDataList: StyleSheetData[], currentURL: string) {
+    const sheets = await Rarray.waitAll(sheetDataList, async data => {
+        try {
+            if (data.type === 'error') throw data.error
+
+            if (data.type === 'text') return optimizeCSS(data.text, currentURL)
+
+            const { body } = await got.get(data.link)
+            return optimizeCSS(body, data.link)
         } catch (_error) {
-            return commentOutError(_error)
+            return { text: commentOutError(_error), urls: new Set<string>() }
         }
     })
+
+    return sheets.reduce(
+        ({ texts, urls }, sheet) => {
+            return { texts: [...texts, sheet.text], urls: new Set([...urls, ...sheet.urls]) }
+        },
+        { texts: [] as string[], urls: new Set<string>() }
+    )
 }
 
 export async function dataSourceURLsToDataList(dataSourceURLs: Set<string>[], currentURL: string) {

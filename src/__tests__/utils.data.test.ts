@@ -1,10 +1,10 @@
+import CleanCSS from 'clean-css'
 import { readFileSync } from 'fs-extra'
-import {
-    dataListToScriptString,
-    dataSourceURLsToDataList,
-    extractOrFetchCSSText,
-} from '../utils/data'
+import { dataListToScriptString, dataSourceURLsToDataList, extractOrFetchCSS } from '../utils/data'
 import { publicFilePath, servedFileURL } from './utils'
+
+const cleanCSS = new CleanCSS()
+const minify = (text: string) => cleanCSS.minify(text).styles
 
 const iconURL = servedFileURL('icon.png')
 const cssURL = servedFileURL('main.css')
@@ -14,9 +14,13 @@ const cssFileText = readFileSync(publicFilePath('main.css'), 'utf8')
 
 test('extractOrFetchCSSText()', async () => {
     const text = '.text { opacity: 1; }'
-    const texts = await extractOrFetchCSSText([{ text }, { link: cssURL }])
+    const { texts, urls } = await extractOrFetchCSS(
+        [{ type: 'text', text }, { type: 'link', link: cssURL }],
+        servedFileURL('')
+    )
 
-    expect(texts).toEqual([text, cssFileText])
+    expect(texts).toEqual([minify(text), minify(cssFileText).replace('/icon.png', iconURL)])
+    expect(urls).toEqual(new Set([iconURL]))
 })
 
 test('dataSourceUrlsToDataList', async () => {

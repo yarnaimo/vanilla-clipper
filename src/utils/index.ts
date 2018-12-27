@@ -29,6 +29,6 @@ export const findChrome = () => {
 export const commentOutError = (error: Error) => `/* ${error.toString()} */`
 
 export function extractExtensionFromURL(url: string) {
-    const m = url.match(/[^?#]+\.(\w+)(?:$|\?|#)['"]?/)
+    const m = url.match(/[^?#]+\.(\w+)(?:$|\?|#)/)
     return m ? m[1] : null
 }

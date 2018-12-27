@@ -33,12 +33,15 @@ export class VDocument {
 
             return sheets.map<StyleSheetData>(s => {
                 if (s.href) {
-                    return { link: s.href }
+                    return { type: 'link', link: s.href }
                 } else {
                     try {
-                        return { text: [...s.cssRules].map(rule => rule.cssText).join('\n') }
+                        return {
+                            type: 'text',
+                            text: [...s.cssRules].map(rule => rule.cssText).join('\n'),
+                        }
                     } catch (error) {
-                        return { error }
+                        return { type: 'error', error: error }
                     }
                 }
             })
