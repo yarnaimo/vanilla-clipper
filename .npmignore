@@ -28,3 +28,5 @@ coverage
 node_modules
 public
 sw.*
+
+.vanilla-clipper
