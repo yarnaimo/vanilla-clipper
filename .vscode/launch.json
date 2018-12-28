@@ -1,0 +1,41 @@
+{
+    // IntelliSense を使用して利用可能な属性を学べます。
+    // 既存の属性の説明をホバーして表示します。
+    // 詳細情報は次を確認してください: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Jest Current",
+            "useWSL": true,
+            "sourceMaps": true,
+            "runtimeArgs": ["-r", "ts-node/register", "--nolazy"],
+            "program": "${workspaceFolder}/node_modules/jest/bin/jest",
+            "args": ["--runInBand", "${relativeFile}", "--coverage", "false"],
+            "sourceMapPathOverrides": { "/mnt/c/*": "C:\\*" },
+            "env": {
+                "NODE_ENV": "test"
+            },
+            "outputCapture": "std"
+            // "console": "integratedTerminal",
+            // "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "type": "node",
+            "request": "attach",
+            "name": "Attach",
+            "port": 9229,
+            "sourceMapPathOverrides": { "/mnt/c/*": "C:\\*" }
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Debug Server",
+            "useWSL": true,
+            "runtimeArgs": ["-r", "ts-node/register"],
+            "args": ["src/index.ts"],
+            "sourceMapPathOverrides": { "/mnt/c/*": "C:\\*" }
+        }
+    ]
+}
