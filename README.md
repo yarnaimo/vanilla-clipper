@@ -1,4 +1,4 @@
-# 📄 Vanilla Clipper
+# 📃 Vanilla Clipper
 
 ![](https://img.shields.io/npm/v/vanilla-clipper.svg?style=for-the-badge)
 ![](https://img.shields.io/bundlephobia/minzip/vanilla-clipper.svg?style=for-the-badge)
