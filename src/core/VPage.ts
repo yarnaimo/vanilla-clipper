@@ -1,5 +1,5 @@
 import { Page } from 'puppeteer-core'
-import { config } from '../config'
+import { config } from '../config-store'
 import { VFrame } from './VFrame'
 
 export class VPage extends VFrame {

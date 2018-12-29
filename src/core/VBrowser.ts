@@ -1,7 +1,7 @@
 import { isNot } from '@yarnaimo/rain'
 import { ensureDir } from 'fs-extra'
 import { Browser, EmulateOptions, launch, LaunchOptions } from 'puppeteer-core'
-import { config } from '../config'
+import { config } from '../config-store'
 import { findChrome, noSandboxArgs, sig } from '../utils'
 import { VPage } from './VPage'
 const isTest = process.env.NODE_ENV === 'test'
