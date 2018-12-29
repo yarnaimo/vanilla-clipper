@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import { outputFile } from 'fs-extra'
 import { DateTime } from 'luxon'
 import { join } from 'path'
