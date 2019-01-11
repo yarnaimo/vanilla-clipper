@@ -20,6 +20,7 @@ tmp
 Thumbs.db
 
 .cache
+.config
 .env
 .firebase
 .nuxt
