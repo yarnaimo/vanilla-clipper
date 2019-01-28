@@ -6,11 +6,13 @@ import { launch, servedFileURL } from './utils'
 
 let vDocument: VDocument
 let vBrowser: VBrowser
+let vPage: VPage
 let page: Page
 
 beforeAll(async () => {
     vBrowser = await launch()
-    page = (await vBrowser.newPage()).frame
+    vPage = await vBrowser.newPage()
+    page = vPage.frame
 })
 
 afterAll(async () => {
@@ -19,14 +21,14 @@ afterAll(async () => {
 
 beforeEach(async () => {
     await page.goto(servedFileURL('page.html'))
-    vDocument = await VDocument.create(new VPage(page), () => document)
+    vDocument = await VDocument.create(vPage, () => document)
 })
 
 test('#getSheetDataList()', async () => {
     const result = await vDocument.getSheetDataList()
     expect(result).toEqual([
-        { type: 'link', link: servedFileURL('main.css') },
-        { type: 'text', text: expect.stringMatching(/\.style-tag/) },
+        { type: 'link', url: servedFileURL('main.css') },
+        { type: 'text', url: servedFileURL('page'), text: expect.stringMatching(/\.style-tag/) },
     ])
 })
 

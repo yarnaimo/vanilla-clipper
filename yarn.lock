@@ -46,6 +46,11 @@
   dependencies:
     symbol-observable "^1.2.0"
 
+"@sindresorhus/is@^0.14.0":
+  version "0.14.0"
+  resolved "https://registry.yarnpkg.com/@sindresorhus/is/-/is-0.14.0.tgz#9fb3a3cf3132328151f353de4632e01e52102bea"
+  integrity sha512-9NET910DNaIPngYnLLPeg+Ogzqsi9uM4mSboU5y6p8S5DzMTVEsJZrawi+BoDNUVBa2DhJqQYUFvMDfgU062LQ==
+
 "@szmarczak/http-timer@^1.1.0":
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/@szmarczak/http-timer/-/http-timer-1.1.1.tgz#6402258dfe467532b26649ef076b4d11f74fb612"
@@ -67,6 +72,18 @@
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/@types/css-tree/-/css-tree-1.0.0.tgz#45328e3667787b676467931f1c23745ef488bec6"
   integrity sha512-JQLJu+zZfCWhW2KnUbXe2Qd1ieI6W9m9txvoiNO9Gy4tyMGn4aVvt8aE/GaTc96a3Mqy/mN/2buo0m8sI3bRZw==
+
+"@types/filenamify-url@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@types/filenamify-url/-/filenamify-url-1.0.0.tgz#c6c1e652f1c89c2d323c91911ba5ed093c26d95e"
+  integrity sha512-epz38Nzgfghb7sv7ueQxeb5CJj6CWl/ZRg7Xixsur2b+mDAvRD9bZDsqXE1jVyMEDGldsSV8b5tvvV2WWYwT4Q==
+  dependencies:
+    "@types/filenamify" "*"
+
+"@types/filenamify@*":
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/@types/filenamify/-/filenamify-2.0.1.tgz#2a75ad266f4fb82e113ef7fdc52e0355c27c2b3d"
+  integrity sha512-QpmNRLMBSQtvd1eV8dodwiUCtSJRhg0EhV+9Xwpch1DhiXPh75qx6aRxVfHvzhQdPzrFJx9v+hpiC0FIVyPQOA==
 
 "@types/fs-extra@^5.0.4":
   version "5.0.4"
@@ -219,6 +236,17 @@
     ts-jest "^23.10.4"
     ts-node "^7.0.1"
     typescript "^3.2.1"
+
+"@yarnaimo/twimo@^1.3.0":
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/@yarnaimo/twimo/-/twimo-1.3.0.tgz#978ef9d01a882a755c8f72fb9d4dbb1807aa576d"
+  integrity sha512-AGgK/hq+w1TX4/7rMCzAicenhq6/eGOxAKqF6hNlGCvzK16W5psgE9gBwxnW7YOC8kfGlXGNtOeQsHrrmEKguA==
+  dependencies:
+    "@yarnaimo/rain" "^0.1.2"
+    big-integer "^1.6.34"
+    got "^9.2.1"
+    oauth-1.0a "^2.2.4"
+    twitter-d "^0.2.1"
 
 abab@^2.0.0:
   version "2.0.0"
@@ -635,6 +663,11 @@ bcrypt-pbkdf@^1.0.0:
   integrity sha1-pDAdOJtqQ/m2f/PKEaP2Y342Dp4=
   dependencies:
     tweetnacl "^0.14.3"
+
+big-integer@^1.6.34:
+  version "1.6.40"
+  resolved "https://registry.yarnpkg.com/big-integer/-/big-integer-1.6.40.tgz#02e4cd4d6e266c4d9ece2469c05cb6439149fc78"
+  integrity sha512-CjhtJp0BViLzP1ZkEnoywjgtFQXS2pomKjAJtIISTCnuHILkLcAXLdFLG/nxsHc4s9kJfc+82Xpg8WNyhfACzQ==
 
 brace-expansion@^1.1.7:
   version "1.1.11"
@@ -1797,6 +1830,23 @@ google-libphonenumber@^3.1.6:
   version "3.2.1"
   resolved "https://registry.yarnpkg.com/google-libphonenumber/-/google-libphonenumber-3.2.1.tgz#0395f7099ba05012abad78685955e8ba5cdd6373"
   integrity sha512-SUE8hWi8sJSK00NSuD+lJWVUNJtmoHRjXlAcN6dR3kTc4HYY7rey6/LfOC6COW8Wup07Fup1p0Tao57liq9HRA==
+
+got@^9.2.1:
+  version "9.5.0"
+  resolved "https://registry.yarnpkg.com/got/-/got-9.5.0.tgz#6fd0312c6b694c0a11d9119d95fd7daed174eb49"
+  integrity sha512-N+4kb6i9t1lauJ4NwLVVoFVLxZNa6i+iivtNzCSVw7+bVbTXoq0qXctdd8i9rj3lrI0zDk5NGzcO4bfpEP6Uuw==
+  dependencies:
+    "@sindresorhus/is" "^0.14.0"
+    "@szmarczak/http-timer" "^1.1.0"
+    cacheable-request "^5.1.0"
+    decompress-response "^3.3.0"
+    duplexer3 "^0.1.4"
+    get-stream "^4.1.0"
+    lowercase-keys "^1.0.1"
+    mimic-response "^1.0.1"
+    p-cancelable "^1.0.0"
+    to-readable-stream "^1.0.0"
+    url-parse-lax "^3.0.0"
 
 got@^9.3.2:
   version "9.3.2"
@@ -3583,6 +3633,11 @@ nwsapi@^2.0.7, nwsapi@^2.0.9:
   resolved "https://registry.yarnpkg.com/nwsapi/-/nwsapi-2.0.9.tgz#77ac0cdfdcad52b6a1151a84e73254edc33ed016"
   integrity sha512-nlWFSCTYQcHk/6A9FFnfhKc14c3aFhfdNBXgo8Qgi9QTBu/qg3Ww+Uiz9wMzXd1T8GFxPc2QIHB6Qtf2XFryFQ==
 
+oauth-1.0a@^2.2.4:
+  version "2.2.5"
+  resolved "https://registry.yarnpkg.com/oauth-1.0a/-/oauth-1.0a-2.2.5.tgz#943ee55a5c0db5c21143ec27e2f56c6d0e2a5e54"
+  integrity sha512-7Y4Gs+2dPOjrlJDzEPdpuH46gzgYeVF7CKOOQNpWKz1nlbWn2rqKSt3oF0By6KxudbOQATEUY74SphuTN0grPg==
+
 oauth-sign@~0.9.0:
   version "0.9.0"
   resolved "https://registry.yarnpkg.com/oauth-sign/-/oauth-sign-0.9.0.tgz#47a7b016baa68b5fa0ecf3dee08a85c679ac6455"
@@ -4934,6 +4989,11 @@ tweetnacl@^0.14.3, tweetnacl@~0.14.0:
   version "0.14.5"
   resolved "https://registry.yarnpkg.com/tweetnacl/-/tweetnacl-0.14.5.tgz#5ae68177f192d4456269d108afa93ff8743f4f64"
   integrity sha1-WuaBd/GS1EViadEIr6k/+HQ/T2Q=
+
+twitter-d@^0.2.1:
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/twitter-d/-/twitter-d-0.2.1.tgz#b781f8a5d04e5fc7e9e5ba79149e156705acd556"
+  integrity sha512-/V69pnpUzcf+VrHSIxc5fsC46lgmtQ8fsKRA38pJgCPpgY/9zAXHcNqi9E5JXnvWaLqcC7MAz0piucVM1gNZ7A==
 
 type-check@~0.3.2:
   version "0.3.2"

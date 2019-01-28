@@ -1,9 +1,6 @@
-import { createElementFinder } from '../utils/element'
+import { VJsdom } from '../core/VJsdom'
 
-export type VPlugin = (
-    getElements: ReturnType<typeof createElementFinder>,
-    document: Document
-) => void
+export type VPlugin = (dom: VJsdom) => void
 
 export interface VPluginStore {
     beforeLoad: VPlugin[]
@@ -17,8 +14,7 @@ export class VPluginStore {
         this.plugins.push(vPlugin)
     }
 
-    exec(document: Document) {
-        const finder = createElementFinder(document)
-        this.plugins.forEach(plugin => plugin(finder, document))
+    exec(dom: VJsdom) {
+        this.plugins.forEach(plugin => plugin(dom))
     }
 }

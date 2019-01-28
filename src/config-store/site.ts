@@ -5,6 +5,7 @@ import { sig } from '../utils'
 
 export interface ISite {
     url: string
+    userAgent: string
     accounts: {
         [label: string]:
             | {
@@ -31,8 +32,10 @@ export class Sites {
 
     async login(site: ISite, vPage: VPage, accountLabel: string = 'default') {
         const account = site.accounts[accountLabel]
-        if (!account) throw new Error(`Account "${accountLabel}" not found`)
-
+        if (!account) {
+            sig.warn(`Account "${accountLabel}" not found`)
+            return
+        }
         if (account.isLoggedIn) return
 
         sig.await('Logging in with account "%s"', accountLabel)
@@ -58,6 +61,7 @@ export class Sites {
                 switch (action) {
                     case 'goto':
                         await vPage.frame.goto(computedArgs[0])
+                        await vPage.frame.waitFor(2000)
                         break
 
                     case 'focus':

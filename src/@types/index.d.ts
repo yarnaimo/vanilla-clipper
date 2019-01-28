@@ -3,5 +3,6 @@ interface DOMStringMap {
     vanillaClipperHref?: string
     vanillaClipperStyle?: string
     vanillaClipperScript?: string
+    vanillaClipperVideo?: 'video' | 'gif'
     vanillaClipperIframeUuid?: string
 }

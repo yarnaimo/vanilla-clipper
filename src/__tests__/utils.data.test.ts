@@ -14,13 +14,12 @@ const cssFileText = readFileSync(publicFilePath('main.css'), 'utf8')
 
 test('extractOrFetchCSSText()', async () => {
     const text = '.text { opacity: 1; }'
-    const { texts, urls } = await extractOrFetchCSS(
-        [{ type: 'text', text }, { type: 'link', link: cssURL }],
-        servedFileURL('')
-    )
+    const sheets = await extractOrFetchCSS([
+        { type: 'text', url: servedFileURL(''), text },
+        { type: 'link', url: cssURL },
+    ])
 
-    expect(texts).toEqual([minify(text), minify(cssFileText).replace('/icon.png', iconURL)])
-    expect(urls).toEqual(new Set([iconURL]))
+    expect(sheets).toEqual([minify(text), minify(cssFileText).replace('/icon.png', iconURL)])
 })
 
 test('dataSourceUrlsToDataList', async () => {
@@ -32,6 +31,6 @@ test('dataSourceUrlsToDataList', async () => {
 test('dataListToScriptString', () => {
     const script = dataListToScriptString([[iconURL, iconDataURL]], [cssFileText])
 
-    expect(script).toMatch(`const dataMap = new Map([["${iconURL}","${iconDataURL}"]])`)
-    expect(script).toMatch(`const styleElements = [${JSON.stringify(cssFileText)}]`)
+    expect(script).toMatch(`const dataList = [["${iconURL}","${iconDataURL}"]]`)
+    expect(script).toMatch(`const cssTexts = [${JSON.stringify(cssFileText)}]`)
 })

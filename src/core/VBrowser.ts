@@ -58,7 +58,8 @@ export class VBrowser {
         label,
         device,
     }: { url?: string; label?: string; device?: EmulateOptions } = {}) {
-        const vPage = new VPage(await this.browser.newPage())
+        const vPage = new VPage(this, await this.browser.newPage())
+        await vPage.frame.setCacheEnabled(false)
 
         if (device) await vPage.frame.emulate(device)
         if (url) {

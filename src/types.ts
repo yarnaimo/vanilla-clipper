@@ -9,9 +9,11 @@ export interface DataMap {
 export type DataListItem = [string, string]
 
 export type StyleSheetData =
-    | { type: 'link'; link: string }
-    | { type: 'text'; text: string }
-    | { type: 'error'; error: Error }
+    | { type: 'link'; url: string }
+    | { type: 'text'; url: string; text: string }
+    | { type: 'error'; url: string; error: Error }
+
+export type Sheet = { text: string; url: string }
 
 export type VPlugin = (vDocument: VDocument) => Promise<void>
 

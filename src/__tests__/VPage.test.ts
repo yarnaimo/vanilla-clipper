@@ -1,9 +1,8 @@
-import { readFile } from 'fs-extra'
 import { Frame, Page } from 'puppeteer-core'
 import { VBrowser } from '../core/VBrowser'
 import { VMetadata } from '../core/VMetadata'
 import { getVAttrSelector } from '../utils/element'
-import { launch, publicFilePath, servedFileURL } from './utils'
+import { launch, servedFileURL } from './utils'
 
 let vBrowser: VBrowser
 let metadata: VMetadata
@@ -68,13 +67,11 @@ test('style[data-vanilla-clipper-style] content', async () => {
     ])
 })
 
-test('set [src] attribute from dataMap', async () => {
+test('[src] attribute from dataList', async () => {
     const src = await savedPage.$eval(`img${getVAttrSelector.src()}`, img =>
         img.getAttribute('src')
     )
-    const iconBuffer = await readFile(publicFilePath('icon.png'))
-
-    expect(src).toBe('data:image/png;base64,' + iconBuffer.toString('base64'))
+    expect(src).toMatch('blob:null/')
 })
 
 test('iframe - element count', async () => {

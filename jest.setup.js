@@ -1,4 +1,4 @@
-jest.setTimeout(10000)
+jest.setTimeout(30000)
 
 const micro = require('micro')
 const handler = require('serve-handler')

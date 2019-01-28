@@ -1,12 +1,6 @@
-import { JSDOM } from 'jsdom'
-import {
-    appendScriptToHead,
-    embedIFrameContents,
-    moveAttrToDatasetAndReturnURLs,
-} from '../utils/document'
-import { createElementFinder, getVAttrSelector } from '../utils/element'
+import { VJsdom } from '../core/VJsdom'
+import { getVAttrSelector } from '../utils/element'
 
-const createDocument = (html: string) => new JSDOM(html).window.document
 const src = '/src-path'
 const href = '/href-path'
 
@@ -14,16 +8,14 @@ test('embedIFrameContents()', () => {
     const html = 'iframe content'
     const uuid = '1234'
 
-    const document = createDocument(`
+    const dom = new VJsdom(`
         <html>
             <body>
                 <iframe src="${src}" data-vanilla-clipper-iframe-uuid=${uuid}></iframe>
             </body>
         </html>
     `)
-    const finder = createElementFinder(document)
-
-    const iframes = embedIFrameContents(finder, [{ uuid, html }])
+    const iframes = dom.embedIFrameContents([{ uuid, html }])
 
     expect(iframes).toHaveLength(1)
     expect(iframes[0]).toMatchObject({
@@ -34,7 +26,7 @@ test('embedIFrameContents()', () => {
 })
 
 test('moveAttrToDatasetAndReturnURLs()', () => {
-    const document = createDocument(`
+    const dom = new VJsdom(`
         <html>
             <body>
                 <img src="${src}" />
@@ -44,24 +36,23 @@ test('moveAttrToDatasetAndReturnURLs()', () => {
             </body>
         </html>
     `)
-    const finder = createElementFinder(document)
 
-    const urls = moveAttrToDatasetAndReturnURLs(finder)
+    const urls = dom.moveAttrToDatasetAndReturnURLs()
 
     expect(urls).toEqual(new Set([href, src]))
-    expect(finder({ selector: getVAttrSelector.src(src), not: ['[src]'] })).toHaveLength(1)
-    expect(finder({ selector: getVAttrSelector.href(href), not: ['[href]'] })).toHaveLength(1)
+    expect(dom.finder({ selector: getVAttrSelector.src(src), not: ['[src]'] })).toHaveLength(1)
+    expect(dom.finder({ selector: getVAttrSelector.href(href), not: ['[href]'] })).toHaveLength(1)
 })
 
 test('appendScriptToHead()', () => {
-    const document = createDocument(`
+    const dom = new VJsdom(`
         <html>
             <head></head>
             <body></body>
         </html>
     `)
     const script = "console.log('script')"
-    appendScriptToHead(document, script)
+    dom.appendScriptToHead(script)
 
-    expect(document.head.querySelector(getVAttrSelector.script())!.innerHTML).toBe(script)
+    expect(dom.document.head.querySelector(getVAttrSelector.script())!.innerHTML).toBe(script)
 })

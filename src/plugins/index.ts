@@ -3,8 +3,8 @@ import { VPluginStore } from './VPluginStore'
 export const jsdomPlugins = new VPluginStore()
 
 // clean
-jsdomPlugins.add(getElements => {
-    const els = getElements(
+jsdomPlugins.add(dom => {
+    const els = dom.finder(
         'script',
         'style',
         'link[rel~=stylesheet]',
@@ -19,8 +19,8 @@ jsdomPlugins.add(getElements => {
 })
 
 // remove ads
-jsdomPlugins.add(getElements => {
-    const els = getElements(
+jsdomPlugins.add(dom => {
+    const els = dom.finder(
         'ins.adsbygoogle',
         'a[href^="https://rs.adapf.com"]',
         'iframe[src^="https://tpc.googlesyndication.com"]',
@@ -31,12 +31,17 @@ jsdomPlugins.add(getElements => {
 })
 
 // relative url to absolute
-jsdomPlugins.add(getElements => {
-    const els = getElements('[href]', '[src]')
+jsdomPlugins.add(dom => {
+    const els = dom.finder('[href]', '[src]')
 
     els.forEach((el: any) => {
         const { href, src } = el
-        if (href) el.href = href
+        if (href && !el.getAttribute('href').startsWith('#')) el.href = href
         if (src) el.src = src
     })
+})
+
+// make <body> scrollable
+jsdomPlugins.add(dom => {
+    dom.document.body.style.overflow = 'auto'
 })

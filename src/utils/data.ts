@@ -2,31 +2,25 @@ import { Rarray } from '@yarnaimo/rain'
 import { resolve } from 'url'
 import { commentOutError, got } from '.'
 import { DataListItem, StyleSheetData } from '../types'
-import { cssURLPattern, optimizeCSS } from './css'
+import { cssURLPattern, replaceRelativeURLsInCSS } from './css'
 import { getVAttrSelector } from './element'
 
 export const dataURLPattern = /^data:[\w\/\+]+(?:;.*)?,/
 
-export async function extractOrFetchCSS(sheetDataList: StyleSheetData[], currentURL: string) {
+export async function extractOrFetchCSS(sheetDataList: StyleSheetData[]) {
     const sheets = await Rarray.waitAll(sheetDataList, async data => {
         try {
             if (data.type === 'error') throw data.error
 
-            if (data.type === 'text') return optimizeCSS(data.text, currentURL)
+            if (data.type === 'text') return replaceRelativeURLsInCSS(data.text, data.url)
 
-            const { body } = await got.get(data.link)
-            return optimizeCSS(body, data.link)
+            const { body } = await got.get(data.url)
+            return replaceRelativeURLsInCSS(body, data.url)
         } catch (_error) {
-            return { text: commentOutError(_error), urls: new Set<string>() }
+            return commentOutError(_error)
         }
     })
-
-    return sheets.reduce(
-        ({ texts, urls }, sheet) => {
-            return { texts: [...texts, sheet.text], urls: new Set([...urls, ...sheet.urls]) }
-        },
-        { texts: [] as string[], urls: new Set<string>() }
-    )
+    return sheets
 }
 
 export async function dataSourceURLsToDataList(dataSourceURLs: Set<string>[], currentURL: string) {
@@ -39,14 +33,25 @@ export async function dataSourceURLsToDataList(dataSourceURLs: Set<string>[], cu
 }
 
 export function dataListToScriptString(dataList: DataListItem[], cssTexts: string[]) {
-    return `{
-        const dataMap = new Map(${JSON.stringify(dataList)})
+    const dataElementSelector = `${getVAttrSelector.src()}, ${getVAttrSelector.href()}`
+    const videoElementSelector = `${getVAttrSelector.video()}`
+    const _cssURLPattern = cssURLPattern
 
-        const styleElements = ${JSON.stringify(cssTexts)}
+    async function main() {
+        const objectURLMap = new Map(
+            await Promise.all(
+                dataList.map(async ([url, dataURL]) => {
+                    const blob = await fetch(dataURL).then(res => res.blob())
+                    return [url, URL.createObjectURL(blob)] as [string, string]
+                })
+            )
+        )
+
+        const styleElements = cssTexts
             .map(text =>
                 text.replace(
-                    ${cssURLPattern.toString()},
-                    (_, prefix, url) => \`\${prefix}('\${dataMap.get(url)}')\`
+                    _cssURLPattern,
+                    (_, prefix, url) => `${prefix}('${objectURLMap.get(url)}')`
                 )
             )
             .map(text => {
@@ -58,18 +63,52 @@ export function dataListToScriptString(dataList: DataListItem[], cssTexts: strin
 
         document.head.append(...styleElements)
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const elements = document.querySelectorAll('${getVAttrSelector.src()}, ${getVAttrSelector.href()}')
-            elements.forEach(el => {
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', onload)
+        } else {
+            onload()
+        }
+
+        function onload() {
+            const dataElements = document.querySelectorAll<HTMLElement>(dataElementSelector)
+
+            dataElements.forEach(el => {
                 const { vanillaClipperSrc, vanillaClipperHref } = el.dataset
-                const src = dataMap.get(vanillaClipperSrc)
-                const href = dataMap.get(vanillaClipperHref)
+                const src = objectURLMap.get(vanillaClipperSrc!)
+                const href = objectURLMap.get(vanillaClipperHref!)
 
                 if (src) el.setAttribute('src', src)
                 if (href) el.setAttribute('href', href)
             })
-        })
-    }`
+
+            const videoElement = document.querySelector<HTMLVideoElement>(videoElementSelector)
+
+            if (videoElement) {
+                const playOrPause = () =>
+                    videoElement.paused ? videoElement.play() : videoElement.pause()
+
+                videoElement.onclick = playOrPause
+
+                document.body.onkeypress = () => {
+                    if ((window.event as KeyboardEvent).keyCode === 32) {
+                        ;(window.event as KeyboardEvent).preventDefault()
+                        playOrPause()
+                    }
+                }
+            }
+        }
+    }
+
+    return `
+        const _cssURLPattern = ${_cssURLPattern.toString()}
+        const dataList = ${JSON.stringify(dataList)}
+        const cssTexts = ${JSON.stringify(cssTexts)}
+        const dataElementSelector = '${dataElementSelector}'
+        const videoElementSelector = '${videoElementSelector}'
+
+        ${main.toString()}
+        main()
+    `
 }
 
 export async function getDataURL(url: string, currentURL: string) {

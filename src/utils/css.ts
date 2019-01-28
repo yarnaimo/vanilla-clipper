@@ -77,11 +77,9 @@ function extractFontsFromValue(value: csstree.Value) {
     return { local, remote }
 }
 
-export function optimizeCSS(text: string, currentURL: string) {
+export function replaceRelativeURLsInCSS(text: string, currentURL: string) {
     const doubleQuote = '"'
     const singleQuote = "'"
-
-    const urls = new Set<string>()
     const ast = csstree.parse(text)
 
     csstree.walk(ast, node => {
@@ -97,6 +95,78 @@ export function optimizeCSS(text: string, currentURL: string) {
 
             const absoluteURL = resolve(currentURL, relativeURL)
             node.value.value = absoluteURL
+        }
+    })
+    const generated = csstree.generate(ast)
+    return generated
+}
+
+export function optimizeCSS(text: string, document: Document) {
+    const urls = new Set<string>()
+    const ast = csstree.parse(text)
+
+    csstree.walk(ast, (node, item, list) => {
+        if (node.type === 'Rule' && node.prelude.type === 'SelectorList') {
+            const includesURL = (node.block.children.some(node => {
+                if (node.type !== 'Declaration' || node.value.type === 'Raw') {
+                    return false
+                }
+                return (node.value.children.some(node => node.type === 'Url') as any) as boolean
+            }) as any) as boolean
+
+            if (!includesURL) {
+                return
+            }
+
+            try {
+                const prelude = csstree.clone(node.prelude) as csstree.SelectorList
+
+                prelude.children.forEach((node, item, list) => {
+                    if (node.type === 'Selector') {
+                        node.children.forEach((node, item, list) => {
+                            if (node.type === 'Percentage') {
+                                throw new Error()
+                            }
+
+                            if (node.type === 'PseudoElementSelector') {
+                                list.remove(item)
+                            }
+
+                            if (
+                                node.type === 'PseudoClassSelector' &&
+                                [
+                                    'active',
+                                    'checked',
+                                    'disabled',
+                                    'focus',
+                                    'hover',
+                                    'link',
+                                    'required',
+                                    'visited',
+                                    'after',
+                                    'before',
+                                    'cue',
+                                    'first-letter',
+                                    'first-line',
+                                    'selection',
+                                    'slotted',
+                                ].includes(node.name)
+                            ) {
+                                list.remove(item)
+                            }
+                        })
+
+                        if (!node.children.getSize()) list.remove(item)
+                    }
+                })
+
+                if (!prelude.children.getSize()) return
+
+                const selector = csstree.generate(prelude)
+                const element = document.body.querySelector(selector)
+
+                if (!element) list.remove(item)
+            } catch (error) {}
         }
     })
 
@@ -181,5 +251,7 @@ export function optimizeCSS(text: string, currentURL: string) {
         }
     })
 
-    return { text: csstree.generate(ast), urls }
+    const generated = csstree.generate(ast)
+
+    return { text: generated, urls }
 }

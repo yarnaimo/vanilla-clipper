@@ -3,27 +3,28 @@ import { VMetadata } from '..'
 
 export function generateFullHTML({
     doctype = '',
-    html,
+    document,
     vMetadata,
     minify: shouldMinify,
 }: {
     doctype?: string
-    html: string
+    document: Document
     vMetadata?: VMetadata
     minify: boolean
 }) {
-    const fullHTML = vMetadata
-        ? `${doctype}
-<!--Clipped with vanilla-clipper-->
-<!--vanilla-clipper-metadata: ${vMetadata.stringify()}-->
-${html}`
-        : html
+    if (vMetadata) {
+        const meta = document.createElement('meta')
+        meta.name = 'vanilla-clipper'
+        meta.content = vMetadata.stringify()
+        document.head.prepend(meta)
+    }
+    const fullHTML = `${doctype}\n${document.documentElement.outerHTML}`
 
     return shouldMinify ? minify(fullHTML, { minifyJS: true, minifyCSS: true }) : fullHTML
 }
 
 export function extractVanillaMetadata(fullHTML: string) {
-    const m = fullHTML.match(/^<!--vanilla-clipper-metadata: ({\n[\s\S]+?\n})-->/)
+    const m = fullHTML.match(/<!--vanilla-clipper-metadata: ({\n[\s\S]+?\n})-->/)
     if (!m) return null
 
     return m && m[1]

@@ -2,29 +2,38 @@ import { homedir } from 'os'
 import { resolve } from 'path'
 import { ISite, Sites } from './site'
 
-export interface IConfigStore {
+export interface IConfig {
+    twitter?: {
+        consumerKey: string
+        consumerSecret: string
+        token: string
+        tokenSecret: string
+        userId: string
+    }
     sites: ISite[]
 }
 
 export class ConfigStore {
-    configData: IConfigStore = { sites: [] }
+    twitter?: IConfig['twitter']
 
     sites!: Sites
 
     constructor() {}
 
-    private loadConfigModule(dirname: string) {
-        return require(resolve(dirname, '.vanilla-clipper', 'config.js')) as IConfigStore
+    private loadConfigFile(dirname: string) {
+        return require(resolve(dirname, '.vanilla-clipper', 'config.js')) as IConfig
     }
 
     load() {
+        let loadedConfig: IConfig
         try {
-            this.configData = this.loadConfigModule(process.cwd())
+            loadedConfig = this.loadConfigFile(process.cwd())
         } catch (error) {
-            this.configData = this.loadConfigModule(homedir())
+            loadedConfig = this.loadConfigFile(homedir())
         }
 
-        this.sites = new Sites(this.configData.sites)
+        this.sites = new Sites(loadedConfig.sites)
+        this.twitter = loadedConfig.twitter
     }
 }
 
