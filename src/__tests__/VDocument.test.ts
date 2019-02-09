@@ -33,7 +33,7 @@ test('#getSheetDataList()', async () => {
 })
 
 test('#setUuidToIFrames()', async () => {
-    await vDocument.setUuidToIFrames()
+    await vDocument.setUuidToIFramesAndShadowHosts()
     const uuids = await page.$$eval('iframe', els =>
         els.map(el => (el as HTMLElement).dataset.vanillaClipperIframeUuid)
     )

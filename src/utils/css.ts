@@ -1,7 +1,12 @@
+import { Rarray } from '@yarnaimo/rain'
 import csstree from 'css-tree'
-import { resolve } from 'url'
-import { extractExtensionFromURL } from '.'
-import { dataURLPattern } from './data'
+import { commentOutError, got } from '.'
+import { Resource } from '../data/Resource'
+import { Sheet, StyleSheetData } from '../types'
+import { dataURLPattern, extractExtensionFromURL } from './file'
+
+const doubleQuote = '"'
+const singleQuote = "'"
 
 export const cssURLPattern = /([:,\s]\s*url)\s*\((?!\s*data:.+,)\s*(\S+?)\s*\)/gi
 
@@ -19,7 +24,37 @@ interface RemoteFont {
     formatName: string
 }
 
+const unescapeURL = (url: string) =>
+    url.startsWith(doubleQuote) && url.endsWith(doubleQuote)
+        ? url.slice(1, -1).replace(/\\"/g, doubleQuote)
+        : url.startsWith(singleQuote) && url.endsWith(singleQuote)
+        ? url.slice(1, -1).replace(/\\'/g, singleQuote)
+        : url
+
+export async function extractOrFetchCSS(sheetDataList: StyleSheetData[]) {
+    const sheets: Sheet[] = await Rarray.waitAll(sheetDataList, async data => {
+        try {
+            if (data.type === 'error') {
+                throw data.error
+            }
+
+            if (data.type === 'text') {
+                return { text: data.text, url: data.url }
+            }
+
+            const { body } = await got.get(data.url)
+            return { text: body, url: data.url }
+        } catch (_error) {
+            return { text: commentOutError(_error), url: data.url }
+        }
+    })
+    return sheets
+}
+
 function extractFontsFromValue(value: csstree.Value) {
+    const local = [] as csstree.FunctionNode[]
+    const remote = [] as RemoteFont[]
+
     const chunks = value.children.toArray().reduce(
         (array, node) => {
             if (node.type === 'Operator' && node.value === ',') {
@@ -31,9 +66,6 @@ function extractFontsFromValue(value: csstree.Value) {
         },
         [[]] as csstree.CssNode[][]
     )
-
-    const local = [] as csstree.FunctionNode[]
-    const remote = [] as RemoteFont[]
 
     chunks.forEach(chunk => {
         const functionNodes = chunk.filter(
@@ -52,6 +84,7 @@ function extractFontsFromValue(value: csstree.Value) {
         }
 
         let formatName: string | undefined
+
         if (formatNode) {
             const data = formatNode.children.first()
 
@@ -77,36 +110,98 @@ function extractFontsFromValue(value: csstree.Value) {
     return { local, remote }
 }
 
-export function replaceRelativeURLsInCSS(text: string, currentURL: string) {
-    const doubleQuote = '"'
-    const singleQuote = "'"
-    const ast = csstree.parse(text)
+function processSelectorList(prelude: csstree.SelectorList) {
+    prelude.children.forEach((node, item, list) => {
+        if (node.type === 'Selector') {
+            node.children.forEach((node, item, list) => {
+                if (node.type === 'Percentage') {
+                    throw new Error()
+                }
 
-    csstree.walk(ast, node => {
-        if (node.type === 'Url') {
-            const { value } = node.value
+                if (node.type === 'PseudoElementSelector') {
+                    list.remove(item)
+                }
 
-            const relativeURL =
-                value.startsWith(doubleQuote) && value.endsWith(doubleQuote)
-                    ? value.slice(1, -1).replace(/\\"/g, doubleQuote)
-                    : value.startsWith(singleQuote) && value.endsWith(singleQuote)
-                    ? value.slice(1, -1).replace(/\\'/g, singleQuote)
-                    : value
+                if (
+                    node.type === 'PseudoClassSelector' &&
+                    [
+                        'active',
+                        'checked',
+                        'disabled',
+                        'focus',
+                        'hover',
+                        'link',
+                        'required',
+                        'visited',
+                        'after',
+                        'before',
+                        'cue',
+                        'first-letter',
+                        'first-line',
+                        'selection',
+                        'slotted',
+                    ].includes(node.name)
+                ) {
+                    list.remove(item)
+                }
+            })
 
-            const absoluteURL = resolve(currentURL, relativeURL)
-            node.value.value = absoluteURL
+            if (!node.children.getSize()) list.remove(item)
         }
     })
-    const generated = csstree.generate(ast)
-    return generated
 }
 
-export function optimizeCSS(text: string, document: Document) {
-    const urls = new Set<string>()
-    const ast = csstree.parse(text)
+async function replaceImports(ast: csstree.CssNode) {
+    let promises: Promise<void>[] = []
 
     csstree.walk(ast, (node, item, list) => {
-        if (node.type === 'Rule' && node.prelude.type === 'SelectorList') {
+        if (
+            node.type === 'Atrule' &&
+            node.name === 'import' &&
+            node.prelude &&
+            node.prelude.type === 'AtrulePrelude'
+        ) {
+            const urlNode = node.prelude.children
+                .toArray()
+                .find((n): n is csstree.Url => n.type === 'Url')
+
+            if (!urlNode) {
+                return
+            }
+
+            const url = unescapeURL(urlNode.value.value)
+
+            promises.push(
+                (async () => {
+                    const { body } = await got.get(url)
+                    const parsed = csstree.parse(body)
+
+                    if (parsed.type !== 'StyleSheet') {
+                        return
+                    }
+
+                    await replaceImports(parsed)
+
+                    list.replace(item, parsed.children)
+                })()
+            )
+        }
+    })
+
+    await Promise.all(promises)
+}
+
+export async function optimizeCSS(
+    { text, url: baseURL }: Sheet,
+    document?: Document | ShadowRoot,
+    noStoring = false
+) {
+    const ast = csstree.parse(text)
+
+    await replaceImports(ast)
+
+    csstree.walk(ast, (node, item, list) => {
+        if (document && node.type === 'Rule' && node.prelude.type === 'SelectorList') {
             const includesURL = (node.block.children.some(node => {
                 if (node.type !== 'Declaration' || node.value.type === 'Raw') {
                     return false
@@ -120,91 +215,40 @@ export function optimizeCSS(text: string, document: Document) {
 
             try {
                 const prelude = csstree.clone(node.prelude) as csstree.SelectorList
-
-                prelude.children.forEach((node, item, list) => {
-                    if (node.type === 'Selector') {
-                        node.children.forEach((node, item, list) => {
-                            if (node.type === 'Percentage') {
-                                throw new Error()
-                            }
-
-                            if (node.type === 'PseudoElementSelector') {
-                                list.remove(item)
-                            }
-
-                            if (
-                                node.type === 'PseudoClassSelector' &&
-                                [
-                                    'active',
-                                    'checked',
-                                    'disabled',
-                                    'focus',
-                                    'hover',
-                                    'link',
-                                    'required',
-                                    'visited',
-                                    'after',
-                                    'before',
-                                    'cue',
-                                    'first-letter',
-                                    'first-line',
-                                    'selection',
-                                    'slotted',
-                                ].includes(node.name)
-                            ) {
-                                list.remove(item)
-                            }
-                        })
-
-                        if (!node.children.getSize()) list.remove(item)
-                    }
-                })
+                processSelectorList(prelude)
 
                 if (!prelude.children.getSize()) return
 
                 const selector = csstree.generate(prelude)
-                const element = document.body.querySelector(selector)
+                const element = document.querySelector(selector)
 
                 if (!element) list.remove(item)
             } catch (error) {}
         }
     })
 
+    let promises: Promise<void>[] = []
+
     csstree.walk(ast, node => {
-        if (node.type === 'Url') {
-            const { value } = node.value
-
-            if (!dataURLPattern.test(value)) {
-                urls.add(value)
-            }
-            return
-        }
-
         if (node.type === 'Atrule' && node.name === 'font-face' && node.block) {
-            const { base, local, remote } = node.block.children.toArray().reduce(
-                ({ base, local, remote }, line) => {
-                    if (
-                        line.type === 'Declaration' &&
-                        line.property === 'src' &&
-                        line.value.type === 'Value'
-                    ) {
-                        const fonts = extractFontsFromValue(line.value)
+            const base = [] as csstree.CssNode[]
+            const local = [] as csstree.FunctionNode[]
+            const remote = [] as RemoteFont[]
 
-                        return {
-                            base,
-                            local: [...local, ...fonts.local],
-                            remote: [...remote, ...fonts.remote],
-                        }
-                    } else {
-                        return { base: [...base, line], local, remote }
-                    }
-                },
-                {
-                    base: [] as csstree.CssNode[],
-                    local: [] as csstree.FunctionNode[],
-                    remote: [] as RemoteFont[],
+            node.block.children.toArray().forEach(line => {
+                if (
+                    line.type === 'Declaration' &&
+                    line.property === 'src' &&
+                    line.value.type === 'Value'
+                ) {
+                    const fonts = extractFontsFromValue(line.value)
+
+                    local.push(...fonts.local)
+                    remote.push(...fonts.remote)
+                } else {
+                    base.push(line)
                 }
-            )
+            })
 
             const optimalRemote = remote.sort((a, b) => {
                 return (
@@ -249,9 +293,31 @@ export function optimizeCSS(text: string, document: Document) {
                 ...base,
             ])
         }
+
+        if (node.type === 'Url') {
+            const { value: url } = node.value
+
+            const relativeURL = unescapeURL(url)
+
+            if (dataURLPattern.test(relativeURL) || noStoring) {
+                return
+            }
+
+            promises.push(
+                (async () => {
+                    const version = await Resource.store(baseURL, relativeURL)
+                    if (!version) {
+                        return
+                    }
+
+                    node.value.value = version.url
+                })()
+            )
+        }
     })
 
-    const generated = csstree.generate(ast)
+    await Promise.all(promises)
 
-    return { text: generated, urls }
+    const generated = csstree.generate(ast)
+    return generated
 }

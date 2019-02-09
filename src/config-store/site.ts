@@ -32,22 +32,31 @@ export class Sites {
 
     async login(site: ISite, vPage: VPage, accountLabel: string = 'default') {
         const account = site.accounts[accountLabel]
+
         if (!account) {
             sig.warn(`Account "${accountLabel}" not found`)
             return
         }
-        if (account.isLoggedIn) return
+        if (account.isLoggedIn) {
+            return
+        }
 
         sig.await('Logging in with account "%s"', accountLabel)
 
         await site.login.reduce(async (prevPromise, [action, ...args]) => {
             await prevPromise
-            if (!action) return
+
+            if (!action) {
+                return
+            }
 
             const computedArgs = await Rarray.waitAll(args, async a => {
-                if (!a.startsWith('$')) return a
+                if (!a.startsWith('$')) {
+                    return a
+                }
 
                 const value = account[a.slice(1)]
+
                 return is.undefined(value)
                     ? ''
                     : is.boolean(value)

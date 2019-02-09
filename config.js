@@ -9,6 +9,7 @@ module.exports = {
     //     tokenSecret: '',
     //     userId: '',
     // },
+    resource: { maxSize: 50 * 1024 * 1024 },
     sites: [
         // {
         //     url: 'twitter.com',

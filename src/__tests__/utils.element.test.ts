@@ -1,11 +1,11 @@
-import { getVAttrSelector, selectorsToString } from '../utils/element'
+import { buildVAttrSelector, selectorsToString } from '../utils/element'
 
 test('getVAttrSelector()', () => {
-    expect(getVAttrSelector.iframeUuid()).toBe('[data-vanilla-clipper-iframe-uuid]')
+    expect(buildVAttrSelector.iframeUuid()).toBe('[data-vanilla-clipper-iframe-uuid]')
 })
 
 test('getVAttrSelector(value)', () => {
-    expect(getVAttrSelector.iframeUuid('1234')).toBe('[data-vanilla-clipper-iframe-uuid="1234"]')
+    expect(buildVAttrSelector.iframeUuid('1234')).toBe('[data-vanilla-clipper-iframe-uuid="1234"]')
 })
 
 test('selectorWithNot()', () => {

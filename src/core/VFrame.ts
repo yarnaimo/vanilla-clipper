@@ -1,21 +1,15 @@
 import { Frame, Page } from 'puppeteer-core'
-import { getDomain } from 'tldjs'
 import { VBrowser } from '..'
-import { optimizeCSS } from '../utils/css'
-import { dataListToScriptString, dataSourceURLsToDataList, extractOrFetchCSS } from '../utils/data'
-import { generateFullHTML } from '../utils/html'
+import { extractOrFetchCSS, optimizeCSS } from '../utils/css'
 import { VDocument } from './VDocument'
 import { VJsdom } from './VJsdom'
-import { VMetadata } from './VMetadata'
 import { VPage } from './VPage'
 
-interface ClipOption {
-    minify?: boolean
+export interface ClipOptions {
     element?: string
     click?: string
     scroll?: string
     maxScrolls?: number
-    vMetadata?: VMetadata
 }
 
 export class VFrame {
@@ -23,14 +17,7 @@ export class VFrame {
 
     constructor(public vBrowser: VBrowser, public frame: Frame | Page) {}
 
-    async clip({
-        minify = true,
-        element,
-        click,
-        scroll,
-        maxScrolls = 10,
-        vMetadata,
-    }: ClipOption = {}) {
+    async clip({ element, click, scroll, maxScrolls = 10 }: ClipOptions = {}) {
         const originalDocument = await VDocument.create(this, () => document)
 
         const height = await originalDocument.scrollToBottom({ element, scroll, maxScrolls })
@@ -42,15 +29,11 @@ export class VFrame {
 
         if (click) await originalDocument.click(click)
 
-        await originalDocument.setUuidToIFrames()
+        await originalDocument.setUuidToIFramesAndShadowHosts()
 
-        const {
-            doctype,
-            html: originalHTML,
-            title,
-            location,
-        } = await originalDocument.getMetadata()
+        await originalDocument.embedShadowDOMContents()
 
+        const { html: originalHTML, location } = await originalDocument.getHTML()
         const sheetDataList = await originalDocument.getSheetDataList()
 
         const dom = new VJsdom(originalHTML, { url: location.href })
@@ -74,28 +57,15 @@ export class VFrame {
             })(),
 
             (async () => {
-                const urlsInAttrs = dom.moveAttrToDatasetAndReturnURLs()
+                await dom.processResourcesInAttrs()
 
-                const cssTexts = await extractOrFetchCSS(sheetDataList)
-                const optimized = cssTexts.map(text => optimizeCSS(text, dom.document))
-
-                const joined = optimized.reduce(
-                    ({ texts, urls }, sheet) => {
-                        return {
-                            texts: [...texts, sheet.text],
-                            urls: new Set([...urls, ...sheet.urls]),
-                        }
-                    },
-                    { texts: [] as string[], urls: new Set<string>() }
+                const sheets = await extractOrFetchCSS(sheetDataList)
+                const optimized = await Promise.all(
+                    sheets.map(sheet => optimizeCSS(sheet, dom.document))
                 )
 
-                const dataList = await dataSourceURLsToDataList(
-                    [joined.urls, urlsInAttrs],
-                    location.href
-                )
-
-                const scriptString = dataListToScriptString(dataList, joined.texts)
-                dom.appendScriptToHead(scriptString)
+                dom.appendStyleSheets(optimized)
+                dom.appendScriptToHead()
             })(),
         ])
 
@@ -103,27 +73,6 @@ export class VFrame {
             await this.resetViewport()
         }
 
-        if (this.isRoot) {
-            if (!vMetadata) {
-                vMetadata = new VMetadata()
-                vMetadata.set({
-                    domain: getDomain(location.href) || location.hostname,
-                    hostname: location.hostname,
-                    url: location.href,
-                    title,
-                })
-            }
-            await vMetadata.validate()
-        }
-
-        return {
-            html: generateFullHTML({
-                doctype,
-                document: dom.document,
-                vMetadata,
-                minify,
-            }),
-            metadata: vMetadata,
-        }
+        return dom.generate(this.isRoot)
     }
 }

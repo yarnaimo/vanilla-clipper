@@ -10,11 +10,14 @@ export interface IConfig {
         tokenSecret: string
         userId: string
     }
+    resource: { maxSize: number }
     sites: ISite[]
 }
 
 export class ConfigStore {
     twitter?: IConfig['twitter']
+
+    resource!: IConfig['resource']
 
     sites!: Sites
 
@@ -34,6 +37,7 @@ export class ConfigStore {
 
         this.sites = new Sites(loadedConfig.sites)
         this.twitter = loadedConfig.twitter
+        this.resource = loadedConfig.resource
     }
 }
 

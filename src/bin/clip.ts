@@ -1,9 +1,8 @@
 #!/usr/bin/env node
-import { outputFile } from 'fs-extra'
-import { DateTime } from 'luxon'
 import yargs from 'yargs'
-import { devices, filenamifyUrl, VBrowser } from '..'
-import { newFilePath, sig } from '../utils'
+import { devices, VBrowser } from '..'
+import { sig } from '../utils'
+import { outputPathFn } from '../utils/file'
 
 export const clip = async () => {
     const {
@@ -15,11 +14,11 @@ export const clip = async () => {
         directory,
         accountLabel,
         device: deviceName,
+        userDataDir,
         element,
         click,
         scroll,
         maxScrolls,
-        userDataDir,
     } = yargs
         .option('verbose', {
             alias: 'v',
@@ -45,7 +44,7 @@ export const clip = async () => {
         .option('directory', {
             alias: 'd',
             type: 'string',
-            default: '.',
+            default: 'main',
             desc: 'Output directory',
         })
         .option('account-label', {
@@ -87,43 +86,28 @@ export const clip = async () => {
         .demandCommand(1).argv
 
     try {
-        const dateString = DateTime.local().toFormat('yyyyMMdd')
         const device = devices[deviceName]
+        const outputPath = outputPathFn(directory)
 
-        const vBrowser = await VBrowser.launch(
-            noSandbox,
-            { userDataDir, headless, dumpio: verbose },
-            language
+        await VBrowser.clipPages(
+            {
+                verbose,
+                noSandbox,
+                headless,
+                language,
+                device,
+                userDataDir,
+            },
+            urls.map(url => ({
+                url,
+                accountLabel,
+                outputPath,
+                element,
+                click,
+                scroll,
+                maxScrolls,
+            }))
         )
-        const vPage = await vBrowser.newPage({ device })
-
-        const successCount = await urls.reduce(async (prevPromise, url, i) => {
-            const _successCount = await prevPromise
-            sig.pending('[%d/%d] Cilpping %s', i + 1, urls.length, url)
-
-            try {
-                await vPage.login(url, accountLabel)
-                await vPage.goto(url)
-                const { html } = await vPage.clip({ element, click, scroll, maxScrolls })
-
-                const basename = `${dateString}-${filenamifyUrl(url)}`
-                const outputPath = await newFilePath(directory, basename)
-
-                await outputFile(outputPath, html)
-                sig.success('Saved as %s', outputPath)
-                return _successCount + 1
-            } catch (error) {
-                sig.error(error)
-                return _successCount
-            }
-        }, Promise.resolve(0))
-
-        await vPage.close()
-
-        if (successCount)
-            sig.complete('Clipped %d page%s', successCount, successCount === 1 ? '' : 's')
-
-        await vBrowser.close()
     } catch (error) {
         sig.error(error)
     } finally {

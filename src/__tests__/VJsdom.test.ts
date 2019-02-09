@@ -1,8 +1,44 @@
+import { DateTime } from 'luxon'
 import { VJsdom } from '../core/VJsdom'
-import { getVAttrSelector } from '../utils/element'
+import { buildVAttrSelector } from '../utils/element'
+import { removeResources } from './utils'
 
 const src = '/src-path'
 const href = '/href-path'
+
+beforeAll(async () => {
+    await removeResources()
+})
+
+afterAll(async () => {
+    await removeResources()
+})
+
+test('metadata', () => {
+    const dom = new VJsdom(
+        `
+            <html>
+                <body>
+                    <title>Title</title>
+                </body>
+            </html>
+        `,
+        { url: 'https://foo.example.com/path' }
+    )
+
+    dom.insertMetadataToDocument()
+
+    const metadata = VJsdom.parseMetadata(dom.metaElement!)
+
+    expect(metadata).toEqual({
+        _version: 1,
+        _createdAt: expect.any(DateTime),
+        domain: 'example.com',
+        hostname: 'foo.example.com',
+        url: 'https://foo.example.com/path',
+        title: 'Title',
+    })
+})
 
 test('embedIFrameContents()', () => {
     const html = 'iframe content'
@@ -25,7 +61,7 @@ test('embedIFrameContents()', () => {
     expect(iframes[0].dataset).toMatchObject({ vanillaClipperSrc: src })
 })
 
-test('moveAttrToDatasetAndReturnURLs()', () => {
+test('processResourcesInAttrs()', async () => {
     const dom = new VJsdom(`
         <html>
             <body>
@@ -37,11 +73,10 @@ test('moveAttrToDatasetAndReturnURLs()', () => {
         </html>
     `)
 
-    const urls = dom.moveAttrToDatasetAndReturnURLs()
+    await dom.processResourcesInAttrs(true)
 
-    expect(urls).toEqual(new Set([href, src]))
-    expect(dom.finder({ selector: getVAttrSelector.src(src), not: ['[src]'] })).toHaveLength(1)
-    expect(dom.finder({ selector: getVAttrSelector.href(href), not: ['[href]'] })).toHaveLength(1)
+    expect(dom.finder({ selector: buildVAttrSelector.src(src), not: [] })).toHaveLength(1)
+    expect(dom.finder({ selector: buildVAttrSelector.href(href), not: [] })).toHaveLength(1)
 })
 
 test('appendScriptToHead()', () => {
@@ -51,8 +86,9 @@ test('appendScriptToHead()', () => {
             <body></body>
         </html>
     `)
-    const script = "console.log('script')"
-    dom.appendScriptToHead(script)
+    dom.appendScriptToHead()
 
-    expect(dom.document.head.querySelector(getVAttrSelector.script())!.innerHTML).toBe(script)
+    expect(dom.document.head.querySelector(buildVAttrSelector.script())!.innerHTML).toMatch(
+        'function main() {'
+    )
 })

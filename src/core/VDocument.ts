@@ -2,7 +2,7 @@ import { Rarray } from '@yarnaimo/rain'
 import { ElementHandle, EvaluateFn } from 'puppeteer-core'
 import { VFrame } from '..'
 import { StyleSheetData } from '../types'
-import { getVAttrSelector } from '../utils/element'
+import { buildVAttrSelector } from '../utils/element'
 
 export class VDocument {
     static async create(vFrame: VFrame, fn: EvaluateFn) {
@@ -27,13 +27,9 @@ export class VDocument {
         return result
     }
 
-    async getMetadata() {
+    async getHTML() {
         return await this.eval(document => ({
-            doctype: document.doctype
-                ? new XMLSerializer().serializeToString(document.doctype)
-                : undefined,
             html: document.documentElement.outerHTML,
-            title: document.title,
             location: document.location,
         }))
     }
@@ -62,8 +58,8 @@ export class VDocument {
         })
     }
 
-    async setUuidToIFrames() {
-        await this.eval(document => {
+    async setUuidToIFramesAndShadowHosts() {
+        return await this.eval(document => {
             function uuidv4() {
                 return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
                     const r = (Math.random() * 16) | 0,
@@ -78,12 +74,34 @@ export class VDocument {
         })
     }
 
+    async embedShadowDOMContents() {
+        return await this.eval(document => {
+            document.querySelectorAll<HTMLElement>('*').forEach(el => {
+                if (!el.shadowRoot) {
+                    return
+                }
+
+                // const cssTexts = [...el.shadowRoot.styleSheets]
+                //     .filter((s): s is CSSStyleSheet => s instanceof CSSStyleSheet)
+                //     .filter(s => !s.disabled && !s.href)
+                //     .map(s => [...s.cssRules].map(rule => rule.cssText).join('\n'))
+
+                // el.shadowRoot.querySelectorAll('style').forEach(el => {
+                //     el.remove()
+                // })
+
+                el.dataset.vanillaClipperShadowContent = el.shadowRoot.innerHTML
+                // el.dataset.vanillaClipperShadowStyles = JSON.stringify(cssTexts)
+            })
+        })
+    }
+
     async clipIframes(jsdomIframeElements: HTMLElement[]) {
         const iframeUuids = jsdomIframeElements.map(el => el.dataset.vanillaClipperIframeUuid!)
 
         return await Rarray.waitAll(iframeUuids, async uuid => {
             try {
-                const handle = await this.$(getVAttrSelector.iframeUuid(uuid))
+                const handle = await this.$(buildVAttrSelector.iframeUuid(uuid))
 
                 const frame = await handle!.contentFrame()
                 const vFrame = new VFrame(this.vFrame.vBrowser, frame!)
@@ -102,6 +120,7 @@ export class VDocument {
                 if ('click' in el) (el as HTMLElement).click()
             })
         }, selector)
+
         await this.vFrame.frame.waitFor(1000)
     }
 

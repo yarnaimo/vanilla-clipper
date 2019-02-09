@@ -5,4 +5,6 @@ interface DOMStringMap {
     vanillaClipperScript?: string
     vanillaClipperVideo?: 'video' | 'gif'
     vanillaClipperIframeUuid?: string
+    vanillaClipperShadowStyles?: string
+    vanillaClipperShadowContent?: string
 }

@@ -1,7 +1,8 @@
 import { Page, Viewport } from 'puppeteer-core'
 import { VBrowser } from '..'
 import { config } from '../config-store'
-import { VFrame } from './VFrame'
+import { ClipOptions, VFrame } from './VFrame'
+import { IMetadata } from './VMetadata'
 
 export class VPage extends VFrame {
     isRoot = true
@@ -11,6 +12,11 @@ export class VPage extends VFrame {
     constructor(public vBrowser: VBrowser, public frame: Page) {
         super(vBrowser, frame)
         this.initialViewport = this.frame.viewport()
+    }
+
+    async clip(options: ClipOptions = {}) {
+        const result = await super.clip(options)
+        return result as { html: string; metadata: IMetadata }
     }
 
     async setViewportHeight(height: number) {
@@ -25,23 +31,22 @@ export class VPage extends VFrame {
         return this.frame.close()
     }
 
-    async goto(url: string) {
+    async goto(url: string, label?: string) {
         const site = config.sites.findSite(url)
+
+        if (site) {
+            await config.sites.login(site, this, label)
+        }
+
         if (site && site.userAgent) {
             await this.frame.setUserAgent(site.userAgent)
         } else {
             await this.frame.setUserAgent(await this.vBrowser.browser.userAgent())
         }
+
         await this.frame.goto('about:blank', { waitUntil: 'networkidle2' })
         await this.frame.waitFor(500)
         await this.frame.goto(url, { waitUntil: 'networkidle2' })
         await this.frame.waitFor(3000)
-    }
-
-    async login(url: string, label: string) {
-        const site = config.sites.findSite(url)
-        if (!site) return
-
-        await config.sites.login(site, this, label)
     }
 }
