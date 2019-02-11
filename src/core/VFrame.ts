@@ -30,7 +30,7 @@ export class VFrame {
         if (click) await originalDocument.click(click)
 
         await originalDocument.setUuidToIFramesAndShadowHosts()
-
+        await originalDocument.convertObjectURLsToDataURL()
         await originalDocument.embedShadowDOMContents()
 
         const { html: originalHTML, location } = await originalDocument.getHTML()

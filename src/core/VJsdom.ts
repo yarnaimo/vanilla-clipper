@@ -154,7 +154,10 @@ export class VJsdom {
             ...this.finder({ selector: '[src]', not: ['[src=""]', 'iframe'] }).map(async el => {
                 el.removeAttribute('srcset')
 
-                const url = el.getAttribute('src')!
+                const url = el.dataset.vanillaClipperSrc || el.getAttribute('src')!
+                const dataURL =
+                    (el.dataset.vanillaClipperSrc && el.getAttribute('src')) || undefined
+
                 if (dataURLPattern.test(url)) {
                     return
                 }
@@ -165,7 +168,7 @@ export class VJsdom {
                     return
                 }
 
-                const version = await Resource.store(this.location.href, url)
+                const version = await Resource.store(this.location.href, url, dataURL)
                 if (!version) {
                     return
                 }
@@ -185,7 +188,10 @@ export class VJsdom {
                     '[rel~=next]',
                 ],
             }).map(async el => {
-                const url = el.getAttribute('href')!
+                const url = el.dataset.vanillaClipperHref || el.getAttribute('href')!
+                const dataURL =
+                    (el.dataset.vanillaClipperHref && el.getAttribute('href')) || undefined
+
                 if (dataURLPattern.test(url)) {
                     return
                 }
@@ -196,7 +202,7 @@ export class VJsdom {
                     return
                 }
 
-                const version = await Resource.store(this.location.href, url)
+                const version = await Resource.store(this.location.href, url, dataURL)
                 if (!version) {
                     return
                 }

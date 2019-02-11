@@ -6,7 +6,16 @@ import { resolve } from 'path'
 import { filenamifyUrl } from '..'
 import { IMetadata } from '../core/VMetadata'
 
-export const dataURLPattern = /^data:[\w\/\+]+(?:;.*)?,/
+export const dataURLPattern = /^data:([\w\/\+]+)(?:;.*)?,(.*)$/
+
+export function dataURLToBuffer(dataURL: string) {
+    const m = dataURLPattern.exec(dataURL)
+    if (!m) {
+        return
+    }
+
+    return { buffer: Buffer.from(m[2], 'base64'), mimetype: m[1] || undefined }
+}
 
 export function extractExtensionFromURL(url: string) {
     const m = url.match(/['"]?[^?#]+\.(\w+)(?:['"]?$|\?|#)/)

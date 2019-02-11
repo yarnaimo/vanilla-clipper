@@ -96,6 +96,46 @@ export class VDocument {
         })
     }
 
+    async convertObjectURLsToDataURL() {
+        await this.eval(async document => {
+            async function toDataURL(objectURL: string) {
+                const blob = await fetch(objectURL)
+                    .then(res => res.blob())
+                    .catch(() => null)
+
+                if (!blob) {
+                    return
+                }
+
+                return new Promise<string>(resolve => {
+                    const reader = new FileReader()
+                    reader.onload = () => resolve(reader.result as string)
+                    reader.readAsDataURL(blob)
+                })
+            }
+
+            await Promise.all([
+                ...[...document.querySelectorAll<HTMLElement>('[src^="blob:"]')].map(async el => {
+                    const dataURL = await toDataURL(el.getAttribute('src')!)
+                    if (!dataURL) {
+                        return
+                    }
+                    el.setAttribute('src', dataURL)
+                }),
+
+                ...[...document.querySelectorAll<HTMLElement>('[href^="blob:"]')].map(async el => {
+                    const dataURL = await toDataURL(el.getAttribute('href')!)
+                    if (!dataURL) {
+                        return
+                    }
+                    el.setAttribute('href', dataURL)
+                }),
+            ])
+        })
+
+        await this.vFrame.frame.waitFor(5000)
+    }
+
     async clipIframes(jsdomIframeElements: HTMLElement[]) {
         const iframeUuids = jsdomIframeElements.map(el => el.dataset.vanillaClipperIframeUuid!)
 

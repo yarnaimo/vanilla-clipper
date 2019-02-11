@@ -8,9 +8,9 @@ import { VPage } from './VPage'
 const isTest = process.env.NODE_ENV === 'test'
 const puppeteer = require(isTest ? 'puppeteer' : 'puppeteer-core')
 
-type ClipOptionsWithURL = ClipOptions & {
+export type ClipOptionsWithURL = ClipOptions & {
     url: string
-    accountLabel: string
+    accountLabel?: string
     outputPath: string | ((metadata: IMetadata) => Promise<string>)
 }
 
@@ -24,9 +24,9 @@ export class VBrowser {
             device,
             userDataDir,
         }: {
-            verbose: boolean
-            noSandbox: boolean
-            headless: boolean
+            verbose?: boolean
+            noSandbox?: boolean
+            headless?: boolean
             language?: string
             device?: EmulateOptions
             userDataDir?: string
