@@ -12,7 +12,7 @@
     "build": "tsc",
     "debug": "node --inspect -r ts-node/register",
     "dev": "yarn ts-node src/index.ts",
-    "postinstall": "DIR=~/.vanilla-clipper && mkdir -p $DIR && test -f $DIR/config.js || cp ./config.js $DIR/config.js",
+    "postinstall": "node scripts/prepare-data-dir.js",
     "prepare": "yarn build",
     "start": "NODE_ENV=production node dist/index.js",
     "test": "NODE_ENV=test jest -w1",

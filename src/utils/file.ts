@@ -50,19 +50,19 @@ export function outputPathFn(directory: string) {
     }
 }
 
+const dataDirectoryName = '.vanilla-clipper'
+export const dataDirectoryInHome = resolve(homedir(), dataDirectoryName)
+
 export const dataDirectoryPath = (() => {
     if (process.env.NODE_ENV === 'test') {
         return resolve('tmp', '__data__')
     }
 
-    const dataDirectoryName = '.vanilla-clipper'
     const inCurrent = resolve(process.cwd(), dataDirectoryName)
-    const inHome = resolve(homedir(), dataDirectoryName)
-
     try {
-        return statSync(inCurrent).isDirectory() ? inCurrent : inHome
+        return statSync(inCurrent).isDirectory() ? inCurrent : dataDirectoryInHome
     } catch (error) {
-        return inHome
+        return dataDirectoryInHome
     }
 })()
 
