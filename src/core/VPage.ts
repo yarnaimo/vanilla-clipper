@@ -1,8 +1,9 @@
 import { Page, Viewport } from 'puppeteer-core'
 import { VBrowser } from '..'
 import { config } from '../config-store'
-import { ClipOptions, VFrame } from './VFrame'
-import { IMetadata } from './VMetadata'
+import { IMetadata } from '../types'
+import { ClipOptions } from './VBrowser'
+import { VFrame } from './VFrame'
 
 export class VPage extends VFrame {
     isRoot = true

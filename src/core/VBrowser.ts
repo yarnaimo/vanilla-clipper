@@ -1,12 +1,18 @@
 import { is } from '@yarnaimo/rain'
 import { ensureDir, outputFile } from 'fs-extra'
 import { Browser, EmulateOptions, launch, LaunchOptions } from 'puppeteer-core'
+import { IMetadata } from '../types'
 import { findChrome, noSandboxArgs, sig } from '../utils'
-import { ClipOptions } from './VFrame'
-import { IMetadata } from './VMetadata'
 import { VPage } from './VPage'
 const isTest = process.env.NODE_ENV === 'test'
 const puppeteer = require(isTest ? 'puppeteer' : 'puppeteer-core')
+
+export type ClipOptions = {
+    element?: string
+    click?: string
+    scroll?: string
+    maxScrolls?: number
+}
 
 export type ClipOptionsWithURL = ClipOptions & {
     url: string

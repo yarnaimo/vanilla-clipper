@@ -5,21 +5,7 @@ import { sig } from '../utils'
 import { outputPathFn } from '../utils/file'
 
 export const clip = async () => {
-    const {
-        _: urls,
-        verbose,
-        noSandbox,
-        headless,
-        language,
-        directory,
-        accountLabel,
-        device: deviceName,
-        userDataDir,
-        element,
-        click,
-        scroll,
-        maxScrolls,
-    } = yargs
+    const options = yargs
         .option('verbose', {
             alias: 'v',
             type: 'boolean',
@@ -84,6 +70,22 @@ export const clip = async () => {
             desc: 'Path to a User Data Directory',
         })
         .demandCommand(1).argv
+
+    const {
+        _: urls,
+        verbose,
+        noSandbox,
+        headless,
+        language,
+        directory,
+        accountLabel,
+        device: deviceName,
+        userDataDir,
+        element,
+        click,
+        scroll,
+        maxScrolls,
+    } = options
 
     try {
         const device = devices[deviceName]

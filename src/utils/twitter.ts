@@ -6,7 +6,9 @@ import { config } from '../config-store'
 export async function getTwitterVideoURL(id: string) {
     const types = new Map([['video', 'video'], ['animated_gif', 'gif']])
 
-    if (!config.twitter) return
+    if (!config.twitter) {
+        return
+    }
 
     const client = new TwimoClient(config.twitter)
     const { extended_entities } = await client.get<Status>('statuses/show', { id })
@@ -31,7 +33,10 @@ export async function getTwitterVideoURL(id: string) {
     })[0]
 
     const mediaType = types.get(type)
-    if (!mediaType || !is.string(largest.url)) return
+
+    if (!mediaType || !is.string(largest.url)) {
+        return
+    }
 
     return {
         type: mediaType,

@@ -1,4 +1,4 @@
-import { isNot } from '@yarnaimo/rain'
+import { is } from '@yarnaimo/rain'
 import * as chromeFinder from 'chrome-launcher/dist/chrome-finder'
 import { getPlatform } from 'chrome-launcher/dist/utils'
 import got from 'got'
@@ -15,7 +15,9 @@ export const findChrome = () => {
         try {
             const platform = getPlatform()
             const [path] = chromeFinder[platform as 'darwin' | 'linux' | 'win32' | 'wsl']()
-            if (isNot.string(path)) throw new Error()
+            if (!is.string(path)) {
+                throw new Error()
+            }
 
             chromePath = path
         } catch (error) {

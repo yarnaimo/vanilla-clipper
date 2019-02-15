@@ -146,7 +146,9 @@ function processSelectorList(prelude: csstree.SelectorList) {
                 }
             })
 
-            if (!node.children.getSize()) list.remove(item)
+            if (!node.children.getSize()) {
+                list.remove(item)
+            }
         }
     })
 }
@@ -217,12 +219,16 @@ export async function optimizeCSS(
                 const prelude = csstree.clone(node.prelude) as csstree.SelectorList
                 processSelectorList(prelude)
 
-                if (!prelude.children.getSize()) return
+                if (!prelude.children.getSize()) {
+                    return
+                }
 
                 const selector = csstree.generate(prelude)
                 const element = document.querySelector(selector)
 
-                if (!element) list.remove(item)
+                if (!element) {
+                    list.remove(item)
+                }
             } catch (error) {}
         }
     })
@@ -277,7 +283,9 @@ export async function optimizeCSS(
             const chunks = [...local.map(l => [l]), optimalRemoteNodes]
 
             const children = chunks.reduce((list, chunk) => {
-                if (list.getSize()) list.appendData({ type: 'Operator', value: ',' })
+                if (list.getSize()) {
+                    list.appendData({ type: 'Operator', value: ',' })
+                }
 
                 chunk.forEach(node => list.appendData(node))
                 return list

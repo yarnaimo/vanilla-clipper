@@ -4,12 +4,11 @@ import { DateTime } from 'luxon'
 import { getDomain } from 'tldjs'
 import { Resource } from '../data/Resource'
 import { jsdomPlugins } from '../plugins'
-import { IFrameData } from '../types'
+import { IFrameData, IMetadata } from '../types'
 import { optimizeCSS } from '../utils/css'
 import { buildVAttrSelector, ElementSelector, selectorsToString } from '../utils/element'
 import { dataURLPattern } from '../utils/file'
 import { getTwitterVideoURL as getVideoURLInTweet } from '../utils/twitter'
-import { IMetadata } from './VMetadata'
 
 export class VJsdom {
     static parseMetadata(meta: HTMLMetaElement): IMetadata {
@@ -89,7 +88,9 @@ export class VJsdom {
 
     setElementAsRoot(selector: string) {
         const el = this.document.body.querySelector(selector)
-        if (el) this.document.body.innerHTML = el.outerHTML
+        if (el) {
+            this.document.body.innerHTML = el.outerHTML
+        }
     }
 
     getIframes() {
@@ -105,7 +106,9 @@ export class VJsdom {
         el.style.height = '100%'
         el.style.position = 'relative'
 
-        if (isGif) el.setAttribute('muted', '')
+        if (isGif) {
+            el.setAttribute('muted', '')
+        }
         el.autoplay = isGif
         el.loop = isGif
         el.controls = true

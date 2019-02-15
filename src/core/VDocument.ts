@@ -74,7 +74,7 @@ export class VDocument {
         })
     }
 
-    async embedShadowDOMContents() {
+    async embedContentOfShadowDOMs() {
         return await this.eval(document => {
             document.querySelectorAll<HTMLElement>('*').forEach(el => {
                 if (!el.shadowRoot) {
@@ -96,7 +96,7 @@ export class VDocument {
         })
     }
 
-    async convertObjectURLsToDataURL() {
+    async replaceObjectURLsWithDataURL() {
         await this.eval(async document => {
             async function toDataURL(objectURL: string) {
                 const blob = await fetch(objectURL)

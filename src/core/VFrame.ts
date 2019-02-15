@@ -1,16 +1,10 @@
 import { Frame, Page } from 'puppeteer-core'
 import { VBrowser } from '..'
 import { extractOrFetchCSS, optimizeCSS } from '../utils/css'
+import { ClipOptions } from './VBrowser'
 import { VDocument } from './VDocument'
 import { VJsdom } from './VJsdom'
 import { VPage } from './VPage'
-
-export interface ClipOptions {
-    element?: string
-    click?: string
-    scroll?: string
-    maxScrolls?: number
-}
 
 export class VFrame {
     isRoot = false
@@ -27,11 +21,13 @@ export class VFrame {
             await this.frame.waitFor(3000)
         }
 
-        if (click) await originalDocument.click(click)
+        if (click) {
+            await originalDocument.click(click)
+        }
 
         await originalDocument.setUuidToIFramesAndShadowHosts()
-        await originalDocument.convertObjectURLsToDataURL()
-        await originalDocument.embedShadowDOMContents()
+        await originalDocument.replaceObjectURLsWithDataURL()
+        await originalDocument.embedContentOfShadowDOMs()
 
         const { html: originalHTML, location } = await originalDocument.getHTML()
         const sheetDataList = await originalDocument.getSheetDataList()

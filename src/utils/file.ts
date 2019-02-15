@@ -4,7 +4,7 @@ import { DateTime } from 'luxon'
 import { homedir } from 'os'
 import { resolve } from 'path'
 import { filenamifyUrl } from '..'
-import { IMetadata } from '../core/VMetadata'
+import { IMetadata } from '../types'
 
 export const dataURLPattern = /^data:([\w\/\+]+)(?:;.*)?,(.*)$/
 

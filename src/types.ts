@@ -1,3 +1,4 @@
+import { DateTime } from 'luxon'
 import { VDocument } from './core/VDocument'
 
 export type TailArguments<T> = T extends (arg1: any, ...args: infer U) => any ? U : never[]
@@ -25,4 +26,13 @@ export interface VPluginStore {
 export interface IFrameData {
     uuid: string
     html: string
+}
+
+export interface IMetadata {
+    _version: number
+    _createdAt: DateTime
+    domain: string
+    hostname: string
+    url: string
+    title: string
 }
