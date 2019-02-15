@@ -13,9 +13,9 @@ Vanilla Clipper is a Node.js library to _completely_ save a webpage to local wit
 ## Installation
 
 ```sh
-yarn add vanilla-clipper
+yarn global add vanilla-clipper
 # or
-npm i -S vanilla-clipper
+npm i -g vanilla-clipper
 ```
 
 ## Usage
