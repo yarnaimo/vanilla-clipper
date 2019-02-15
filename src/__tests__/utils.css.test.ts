@@ -1,12 +1,8 @@
-import CleanCSS from 'clean-css'
 import csstree from 'css-tree'
 import { readFileSync } from 'fs-extra'
 import { JSDOM } from 'jsdom'
 import { extractOrFetchCSS, optimizeCSS } from '../utils/css'
 import { publicFilePath, servedFileURL } from './utils'
-
-const cleanCSS = new CleanCSS()
-const minify = (text: string) => cleanCSS.minify(text).styles
 
 const iconURL = servedFileURL('icon.png')
 const cssURL = servedFileURL('main.css')

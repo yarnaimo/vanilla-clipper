@@ -27,7 +27,6 @@
     "@yarnaimo/rain": "^0.1.2",
     "@yarnaimo/twimo": "^1.3.0",
     "chrome-launcher": "^0.10.5",
-    "class-validator": "^0.9.1",
     "css-tree": "^1.0.0-alpha.29",
     "filenamify-url": "^1.0.0",
     "fs-extra": "^7.0.1",
