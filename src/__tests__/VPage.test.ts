@@ -1,7 +1,7 @@
 import { readFile } from 'fs-extra'
 import { Frame, Page } from 'puppeteer-core'
 import { VBrowser } from '../core/VBrowser'
-import { IMetadata } from '../core/VMetadata'
+import { IMetadata } from '../types'
 import { buildVAttrSelector } from '../utils/element'
 import { launch, removeResources, resourceDBPath, servedFileURL } from './utils'
 
