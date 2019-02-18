@@ -3,6 +3,8 @@
 ![](https://img.shields.io/npm/v/vanilla-clipper.svg?style=for-the-badge)
 ![](https://img.shields.io/bundlephobia/minzip/vanilla-clipper.svg?style=for-the-badge)
 
+[日本語 (Qiita)](https://qiita.com/yarnaimo/items/66f3b71077d15a22699d)
+
 Vanilla Clipper is a Node.js library to _completely_ save a webpage to local with Puppeteer. You can save all the contents in the page such as **images, videos, CSS, web fonts, iframes, and Shadow DOMs** with one command.
 
 ## Dependencies
