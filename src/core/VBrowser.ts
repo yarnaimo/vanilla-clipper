@@ -50,7 +50,7 @@ export class VBrowser {
             async (prevPromise, { url, accountLabel, outputPath, ...options }, i) => {
                 const _successCount = await prevPromise
 
-                sig.pending('[%d/%d] Cilpping %s', i + 1, list.length, url)
+                sig.pending('[%d/%d] Clipping %s', i + 1, list.length, url)
 
                 try {
                     await vPage.goto(url, accountLabel)
