@@ -2,7 +2,6 @@ import { outputFile } from 'fs-extra'
 import { DateTime } from 'luxon'
 import 'mime-types'
 import { extension } from 'mime-types'
-import { join } from 'path'
 import { ulid } from 'ulid'
 import { resolve as resolveURL } from 'url'
 import { config } from '../config-store'
@@ -58,7 +57,7 @@ export class Resource implements IResource {
         const id = ulid()
         const ext = mimetype && extension(mimetype)
         const filename = ext ? `${id}.${ext}` : id
-        const path = join(outputDir, filename)
+        const path = `${outputDir}/${filename}`
 
         await outputFile(resourcePath(outputDir, filename), buffer)
 
