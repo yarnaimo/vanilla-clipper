@@ -1,5 +1,6 @@
 import { Rarray } from '@yarnaimo/rain'
 import csstree from 'css-tree'
+import { resolve } from 'url'
 import { commentOutError, got } from '.'
 import { Resource } from '../data/Resource'
 import { Sheet, StyleSheetData } from '../types'
@@ -153,7 +154,7 @@ function processSelectorList(prelude: csstree.SelectorList) {
     })
 }
 
-async function replaceImports(ast: csstree.CssNode) {
+async function replaceImports(ast: csstree.CssNode, baseURL: string) {
     let promises: Promise<void>[] = []
 
     csstree.walk(ast, (node, item, list) => {
@@ -171,18 +172,18 @@ async function replaceImports(ast: csstree.CssNode) {
                 return
             }
 
-            const url = unescapeURL(urlNode.value.value)
+            const url = resolve(baseURL, unescapeURL(urlNode.value.value))
 
             promises.push(
                 (async () => {
-                    const { body } = await got.get(url)
+                    const { body } = await got.get(url).catch(() => ({ body: '' }))
                     const parsed = csstree.parse(body)
 
                     if (parsed.type !== 'StyleSheet') {
                         return
                     }
 
-                    await replaceImports(parsed)
+                    await replaceImports(parsed, url)
 
                     list.replace(item, parsed.children)
                 })()
@@ -200,7 +201,7 @@ export async function optimizeCSS(
 ) {
     const ast = csstree.parse(text)
 
-    await replaceImports(ast)
+    await replaceImports(ast, baseURL)
 
     csstree.walk(ast, (node, item, list) => {
         if (document && node.type === 'Rule' && node.prelude.type === 'SelectorList') {
