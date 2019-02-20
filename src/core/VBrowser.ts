@@ -61,7 +61,7 @@ export class VBrowser {
                         : await outputPath(metadata!)
 
                     await outputFile(_outputPath, html)
-                    sig.success('Saved as %s', _outputPath)
+                    sig.success('Saved as %s\n', _outputPath)
 
                     return _successCount + 1
                 } catch (error) {
