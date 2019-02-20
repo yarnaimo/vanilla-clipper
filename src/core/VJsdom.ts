@@ -72,9 +72,16 @@ export class VJsdom {
 
         const html = `${this.doctype}\n${this.document.documentElement.outerHTML}`
 
-        return {
-            html: minify(html, { minifyJS: true, minifyCSS: true }),
-            metadata: this.metadata,
+        try {
+            return {
+                html: minify(html, { minifyJS: true, minifyCSS: true }),
+                metadata: this.metadata,
+            }
+        } catch (error) {
+            return {
+                html,
+                metadata: this.metadata,
+            }
         }
     }
 
