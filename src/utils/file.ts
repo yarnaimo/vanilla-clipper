@@ -29,9 +29,9 @@ export async function newFilePath(directory: string, basename: string, ext = 'ht
         return resolve(directory, `${basename}.${ext}`)
     }
 
-    const regex = new RegExp(`${basename}-(\\d+)\\.${ext}`)
+    const regex = new RegExp(`-(\\d+)\\.${ext}`)
     const numbers = fileList
-        .map(name => name.match(regex))
+        .map(name => name.startsWith(`${basename}-`) && name.match(regex))
         .filter((m): m is RegExpMatchArray => !!m)
         .map(m => parseInt(m[1]))
 
