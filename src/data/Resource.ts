@@ -155,7 +155,7 @@ export class Resource implements IResource {
                 })
             )
         } catch (error) {
-            sig.error(error)
+            sig.warn(error)
             return
         }
     }
