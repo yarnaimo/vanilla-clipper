@@ -69,6 +69,6 @@ export class VFrame {
             await this.resetViewport()
         }
 
-        return dom.generate(this.isRoot)
+        return await dom.generate(this.isRoot)
     }
 }

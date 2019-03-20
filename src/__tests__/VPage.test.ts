@@ -51,7 +51,7 @@ test('resource db', async () => {
                 expect.objectContaining({
                     createdAt: expect.stringMatching(/^\d{4}-/),
                     hash: expect.stringMatching(/^.{64}$/),
-                    path: expect.stringMatching(/^.{26}\/.{26}\.png$/),
+                    path: expect.stringMatching(/^\d{8}\/.{26}\.png$/),
                 }),
             ],
         },
@@ -94,7 +94,7 @@ test('[src] attribute', async () => {
     const src = await savedPage.$eval(`img${buildVAttrSelector.src()}`, img =>
         img.getAttribute('src')
     )
-    expect(src).toMatch(/\.\.\/resources\/.{26}\/.{26}\.png/)
+    expect(src).toMatch(/\.\.\/resources\/\d{8}\/.{26}\.png/)
 })
 
 test('iframe - element count', async () => {

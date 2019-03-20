@@ -1,7 +1,9 @@
+import { Either } from 'fp-ts/lib/Either'
 import { Page, Viewport } from 'puppeteer-core'
 import { VBrowser } from '..'
 import { config } from '../config-store'
 import { IMetadata } from '../types'
+import { MercuryResult } from '../utils/mercury'
 import { ClipOptions } from './VBrowser'
 import { VFrame } from './VFrame'
 
@@ -17,7 +19,11 @@ export class VPage extends VFrame {
 
     async clip(options: ClipOptions = {}) {
         const result = await super.clip(options)
-        return result as { html: string; metadata: IMetadata }
+        return result as {
+            html: string
+            metadata: IMetadata
+            mercuryResult: Either<Error, MercuryResult>
+        }
     }
 
     async setViewportHeight(height: number) {

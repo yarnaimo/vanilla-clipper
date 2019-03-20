@@ -3,8 +3,16 @@ import * as chromeFinder from 'chrome-launcher/dist/chrome-finder'
 import { getPlatform } from 'chrome-launcher/dist/utils'
 import got from 'got'
 import { DateTime } from 'luxon'
+import { EmulateOptions } from 'puppeteer'
 import * as sig from 'signale'
 export { got, sig }
+export { filenamifyUrl, devices }
+
+const filenamifyUrl = require('filenamify-url') as (url: string, options?: any) => string
+
+const devices = require('puppeteer-core/DeviceDescriptors') as {
+    [name: string]: EmulateOptions | undefined
+}
 
 export const noSandboxArgs = ['--no-sandbox', '--disable-setuid-sandbox']
 

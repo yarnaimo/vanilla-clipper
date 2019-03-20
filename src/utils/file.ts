@@ -3,8 +3,8 @@ import { readdir, statSync } from 'fs-extra'
 import { DateTime } from 'luxon'
 import { homedir } from 'os'
 import { resolve } from 'path'
-import { filenamifyUrl } from '..'
 import { IMetadata } from '../types'
+import { filenamifyUrl } from '../utils'
 
 export const dataURLPattern = /^data:([\w\/\+]+)(?:;.*)?,(.*)$/
 

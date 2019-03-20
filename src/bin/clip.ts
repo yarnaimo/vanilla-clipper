@@ -1,11 +1,27 @@
 #!/usr/bin/env node
 import yargs from 'yargs'
-import { devices, VBrowser } from '..'
-import { sig } from '../utils'
+import { VBrowser } from '..'
+import { devices, sig } from '../utils'
 import { outputPathFn } from '../utils/file'
 
 export const clip = async () => {
-    const options = yargs
+    type Options = {
+        _: string[]
+        verbose: boolean
+        noSandbox: boolean
+        headless: boolean
+        language?: string
+        directory: string
+        accountLabel: string
+        device?: string
+        userDataDir?: string
+        element?: string
+        click?: string
+        scroll?: string
+        maxScrolls: number
+    }
+
+    const options = (yargs
         .option('verbose', {
             alias: 'v',
             type: 'boolean',
@@ -69,7 +85,7 @@ export const clip = async () => {
             type: 'string',
             desc: 'Path to a User Data Directory',
         })
-        .demandCommand(1).argv
+        .demandCommand(1).argv as any) as Options
 
     const {
         _: urls,
@@ -88,17 +104,17 @@ export const clip = async () => {
     } = options
 
     try {
-        const device = devices[deviceName]
+        const device = devices[deviceName as string]
         const outputPath = outputPathFn(directory)
 
         await VBrowser.clipPages(
             {
                 verbose,
-                noSandbox,
+                noSandbox: noSandbox,
                 headless,
                 language,
                 device,
-                userDataDir,
+                userDataDir: userDataDir,
             },
             urls.map(url => ({
                 url,

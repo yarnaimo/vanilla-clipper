@@ -8,6 +8,7 @@ import { IFrameData, IMetadata } from '../types'
 import { optimizeCSS } from '../utils/css'
 import { buildVAttrSelector, ElementSelector, selectorsToString } from '../utils/element'
 import { dataURLPattern } from '../utils/file'
+import { mercury } from '../utils/mercury'
 import { getTwitterVideoURL as getVideoURLInTweet } from '../utils/twitter'
 
 export class VJsdom {
@@ -65,22 +66,25 @@ export class VJsdom {
         this.document.head.prepend(meta)
     }
 
-    generate(withMetadata = false) {
+    async generate(withMetadata = false) {
         if (withMetadata) {
             this.insertMetadataToDocument()
         }
 
         const html = `${this.doctype}\n${this.document.documentElement.outerHTML}`
+        const mercuryResult = await mercury.parse(this.location.href, html)
 
         try {
             return {
                 html: minify(html, { minifyJS: true, minifyCSS: true }),
                 metadata: this.metadata,
+                mercuryResult,
             }
         } catch (error) {
             return {
                 html,
                 metadata: this.metadata,
+                mercuryResult,
             }
         }
     }
