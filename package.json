@@ -15,7 +15,7 @@
     "postinstall": "node scripts/prepare-data-dir.js",
     "prepare": "yarn build",
     "start": "NODE_ENV=production node dist/index.js",
-    "test": "NODE_ENV=test jest -w1",
+    "test": "NODE_ENV=test jest -w1 --coverage=false",
     "ts-node": "ts-node"
   },
   "husky": {
