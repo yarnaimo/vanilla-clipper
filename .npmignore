@@ -27,7 +27,6 @@ Thumbs.db
 config
 coverage
 node_modules
-public
 sw.*
 
 .vanilla-clipper

@@ -1,0 +1,8 @@
+.external {
+    opacity: 0;
+    background-image: url(/icon.png);
+}
+
+.external-2 {
+    background-image: url('data:image/png;base64,');
+}

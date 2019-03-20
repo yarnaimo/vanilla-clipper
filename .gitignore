@@ -28,7 +28,6 @@ config
 coverage
 dist/**/*
 node_modules
-public
 sw.*
 
 .vanilla-clipper
