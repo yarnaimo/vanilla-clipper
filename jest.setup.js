@@ -4,7 +4,7 @@ const micro = require('micro')
 const handler = require('serve-handler')
 
 const server = micro(async (req, res) =>
-    handler(req, res, { public: 'src/__tests__/fixture/public' })
+    handler(req, res, { public: 'server/__tests__/fixture/public' }),
 )
 
 beforeAll(() => {

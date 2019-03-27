@@ -28,7 +28,9 @@
     "experimentalDecorators": true
   },
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "web/**/*",
+    "server/**/*"
   ],
   "exclude": [
     "node_modules"
