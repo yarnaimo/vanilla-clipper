@@ -49,7 +49,7 @@ export async function createPageDoc({
         domain,
         ...metadata.value,
     }
-    await pages.post(doc)
+    await (await pages).post(doc)
 
     return right(doc)
 }

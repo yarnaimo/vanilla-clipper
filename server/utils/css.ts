@@ -2,7 +2,7 @@ import { Rarray } from '@yarnaimo/rain'
 import csstree from 'css-tree'
 import { resolve } from 'url'
 import { commentOutError, got } from '.'
-import { storeResource } from '../../src/models/resource'
+import { batchCreateResources, ResourceCreationTasks } from '../../src/models/resource'
 import { Sheet, StyleSheetData } from '../types'
 import { dataURLPattern, extractExtensionFromURL } from './file'
 
@@ -234,7 +234,7 @@ export async function optimizeCSS(
         }
     })
 
-    let promises: Promise<void>[] = []
+    const tasks = [] as ResourceCreationTasks
 
     csstree.walk(ast, node => {
         if (node.type === 'Atrule' && node.name === 'font-face' && node.block) {
@@ -304,28 +304,20 @@ export async function optimizeCSS(
         }
 
         if (node.type === 'Url') {
-            const { value: url } = node.value
-
-            const relativeURL = unescapeURL(url)
+            const { value: rawUrl } = node.value
+            const relativeURL = unescapeURL(rawUrl)
 
             if (dataURLPattern.test(relativeURL) || noStoring) {
                 return
             }
 
-            promises.push(
-                (async () => {
-                    const version = await storeResource(baseURL, relativeURL)
-                    if (!version) {
-                        return
-                    }
+            const url = resolve(baseURL, relativeURL)
 
-                    node.value.value = version.url
-                })(),
-            )
+            tasks.push({ url, callback: url => (node.value.value = url) })
         }
     })
 
-    await Promise.all(promises)
+    await batchCreateResources(tasks)
 
     const generated = csstree.generate(ast)
     return generated

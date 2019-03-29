@@ -1,7 +1,8 @@
 import { is } from '@yarnaimo/rain'
-import { Either } from 'fp-ts/lib/Either'
+import { Either, isLeft } from 'fp-ts/lib/Either'
 import { ensureDir } from 'fs-extra'
 import { Browser, EmulateOptions, launch, LaunchOptions } from 'puppeteer-core'
+import { TryAsync } from 'trysafe'
 import { PageDoc } from '../../src/models/page'
 import { findChrome, noSandboxArgs, sig } from '../utils'
 import { VPage } from './VPage'
@@ -41,7 +42,7 @@ export class VBrowser {
             userDataDir,
         }: VLaunchOptions,
         requests: ClipRequestWithURL[],
-    ) {
+    ): Promise<Either<{ url: string }, PageDoc>[]> {
         const vBrowser = await VBrowser.launch(
             noSandbox,
             { userDataDir, headless, dumpio: verbose },
@@ -49,32 +50,46 @@ export class VBrowser {
         )
         const vPage = await vBrowser.newPage(device)
 
-        const results = [] as Either<Error, PageDoc>[]
+        const results = [] as Either<{ url: string }, PageDoc>[]
 
         for (const [i, { url, accountLabel, ...options }] of requests.entries()) {
+            console.log()
             sig.pending('[%d/%d] Clipping %s', i + 1, requests.length, url)
 
-            await vPage.goto(url, accountLabel)
-            const clipResult = await vPage.clip(options)
-            results.push(clipResult)
+            const result = await TryAsync(async () => {
+                await vPage.goto(url, accountLabel)
 
-            if (clipResult.isLeft()) {
-                sig.error(clipResult.value)
-                return
+                const result = await vPage.clip(options)
+                if (result.isLeft()) {
+                    throw result.value
+                }
+                return result.value
+            })
+
+            results.push(result.mapLeft(l => ({ url })))
+
+            if (result.isLeft()) {
+                sig.error(result.value)
+                continue
             }
 
-            sig.success('Saved as %s\n', `${clipResult.value._id}.html`)
+            sig.success('Saved as %s', `${result.value._id}.html`)
         }
 
         await vPage.close()
+        await vBrowser.close()
 
-        const succeeded = results.filter(r => r.isRight()).length
+        console.log()
+        sig.info('Results --------------------------------')
 
-        if (succeeded) {
-            sig.complete('Clipped %d page%s', succeeded, succeeded === 1 ? '' : 's')
+        const succeededCount = results.filter(r => r.isRight()).length
+        if (succeededCount) {
+            sig.complete('Clipped %d page%s', succeededCount, succeededCount === 1 ? '' : 's')
         }
 
-        await vBrowser.close()
+        results.filter(isLeft).forEach(result => sig.error('Failed to clip %s', result.value.url))
+
+        return results
     }
 
     static async launch(

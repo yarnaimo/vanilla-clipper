@@ -1,7 +1,8 @@
 import { minify } from 'html-minifier'
 import { ConstructorOptions, JSDOM, VirtualConsole } from 'jsdom'
 import { DateTime } from 'luxon'
-import { storeResource } from '../../src/models/resource'
+import { resolve } from 'url'
+import { batchCreateResources, ResourceCreationTasks } from '../../src/models/resource'
 import { jsdomPlugins } from '../plugins'
 import { IFrameData, IMetadata } from '../types'
 import { optimizeCSS } from '../utils/css'
@@ -142,14 +143,14 @@ export class VJsdom {
     }
 
     async processResourcesInAttrs(noStoring = false) {
-        const process = async (
+        const tasks = [] as ResourceCreationTasks
+
+        const process = (
             el: HTMLElement,
             attrName: string,
             vcPropName: 'vanillaClipperSrc' | 'vanillaClipperHref',
         ) => {
-            const originalUrl = el.dataset[vcPropName] || el.getAttribute(attrName)!
-            const storedDataUrlOrFileUrl =
-                (el.dataset[vcPropName] && el.getAttribute(attrName)) || undefined
+            const originalUrl = el.getAttribute(attrName)!
 
             if (dataURLPattern.test(originalUrl)) {
                 return
@@ -161,39 +162,32 @@ export class VJsdom {
                 return
             }
 
-            const version = await storeResource(
-                this.location.href,
-                originalUrl,
-                storedDataUrlOrFileUrl,
-            )
-            if (!version) {
-                return
-            }
+            const url = resolve(this.location.href, originalUrl)
 
-            el.setAttribute(attrName, version.url)
+            tasks.push({ url, callback: url => el.setAttribute(attrName, url) })
         }
 
-        await Promise.all([
-            ...this.finder({ selector: '[src]', not: ['[src=""]', 'iframe'] }).map(async el => {
-                el.removeAttribute('srcset')
-                await process(el, 'src', 'vanillaClipperSrc')
-            }),
+        this.finder({ selector: '[src]', not: ['[src=""]', 'iframe'] }).map(el => {
+            el.removeAttribute('srcset')
+            process(el, 'src', 'vanillaClipperSrc')
+        })
 
-            ...this.finder({
-                selector: '[href]',
-                not: [
-                    '[href=""]',
-                    'a',
-                    'div',
-                    '[rel~=alternate]',
-                    '[rel~=canonical]',
-                    '[rel~=prev]',
-                    '[rel~=next]',
-                ],
-            }).map(async el => {
-                await process(el, 'href', 'vanillaClipperHref')
-            }),
-        ])
+        this.finder({
+            selector: '[href]',
+            not: [
+                '[href=""]',
+                'a',
+                'div',
+                '[rel~=alternate]',
+                '[rel~=canonical]',
+                '[rel~=prev]',
+                '[rel~=next]',
+            ],
+        }).map(el => {
+            process(el, 'href', 'vanillaClipperHref')
+        })
+
+        await batchCreateResources(tasks)
     }
 
     async optimizeStylesInShadowDOM() {

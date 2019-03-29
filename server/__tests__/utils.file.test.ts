@@ -2,7 +2,6 @@ import { resolve } from 'path'
 import {
     dataDirectoryPath,
     dataPath,
-    dbDirectory,
     extractExtensionFromURL,
     newFilePath,
     pagesMainDirectory,
@@ -26,10 +25,6 @@ test('dataPath()', () => {
 })
 
 describe('Directory', () => {
-    test('dbDirectory', () => {
-        expect(dbDirectory.path).toBe(resolve(dataDirectoryPath, 'db'))
-    })
-
     test('pageDirectory', () => {
         expect(pagesMainDirectory.path).toBe(resolve(dataDirectoryPath, 'pages', 'main'))
     })

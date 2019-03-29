@@ -23,6 +23,7 @@ export class VPage extends VFrame {
     async clip(options: ClipRequest = {}): Promise<Either<Error, PageDoc>> {
         const _id = ulid()
         const result = await TryAsync(() => this._clip(options))
+
         if (result.isLeft()) {
             return left(result.value)
         }

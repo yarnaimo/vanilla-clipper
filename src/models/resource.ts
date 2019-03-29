@@ -3,10 +3,9 @@ import 'mime-types'
 import { extension } from 'mime-types'
 import { TryAsync } from 'trysafe'
 import { ulid } from 'ulid'
-import { resolve as resolveURL } from 'url'
 import { config } from '../../server/config-store'
 import { got, now, sig } from '../../server/utils'
-import { dataURLToBuffer, getHash, resourcesDirectory } from '../../server/utils/file'
+import { getHash, resourcesDirectory } from '../../server/utils/file'
 import { VPouchdb } from '../pouchdb'
 
 export type ResourceDoc = {
@@ -16,16 +15,11 @@ export type ResourceDoc = {
     path: string
 }
 
-export const resources = VPouchdb<ResourceDoc>('resources')
-
-const promise = resources.createIndex({
+export const resources = VPouchdb<ResourceDoc>('resources', {
     index: { fields: ['url', 'created_at'] },
 })
 
-function withRelativeURL(version?: { path: string }) {
-    if (!version) {
-        return
-    }
+function withRelativeURL(version: ResourceDoc) {
     return { version, url: `../../resources/${version.path}` }
 }
 
@@ -37,7 +31,7 @@ async function createVersion({
 }: {
     url: string
     buffer: Buffer
-    hash?: string
+    hash: string
     mimetype?: string
 }) {
     const outputDir = DateTime.local().toFormat('yyyyMMdd')
@@ -49,27 +43,22 @@ async function createVersion({
 
     await resourcesDirectory.file(path).write(buffer)
 
-    if (hash) {
-        const doc: ResourceDoc = {
-            url,
-            created_at: now(),
-            hash,
-            path,
-        }
-
-        await resources.post(doc)
-        return doc
+    const doc: ResourceDoc = {
+        url,
+        created_at: now(),
+        hash,
+        path,
     }
+    await (await resources).post(doc)
 
-    return { path }
+    return doc
 }
 
 async function getVersions(url: string) {
-    await promise
-
-    const result = await resources.find({
+    const result = await (await resources).find({
         selector: {
             url,
+            language: { $ne: 'query' },
         },
     })
 
@@ -84,8 +73,6 @@ async function getVersions(url: string) {
     })
 
     return {
-        versions,
-
         recentVersion() {
             const last = versions[versions.length - 1] as ResourceDoc | undefined
 
@@ -93,23 +80,31 @@ async function getVersions(url: string) {
                 return last
             }
         },
+
+        findByHash(hash: string) {
+            return versions.find(v => v.hash === hash)
+        },
     }
 }
 
-export async function storeResource(
-    baseUrl: string,
-    originalUrl: string,
-    storedDataUrlOrFileUrl?: string,
-) {
-    const bufferFromoriginalDataUrl = dataURLToBuffer(originalUrl)
+export type ResourceCreationTasks = { url: string; callback: (url: string) => void }[]
 
-    if (bufferFromoriginalDataUrl) {
-        const version = await createVersion({ ...bufferFromoriginalDataUrl, url: originalUrl })
-        return withRelativeURL(version)
-    }
+export async function batchCreateResources(tasks: ResourceCreationTasks) {
+    const urls = [...new Set(tasks.map(task => task.url))]
 
-    const url = resolveURL(baseUrl, originalUrl)
+    await Promise.all(
+        urls.map(async url => {
+            const version = await storeResource(url)
+            if (!version) {
+                return
+            }
 
+            tasks.filter(task => task.url === url).forEach(task => task.callback(version.url))
+        }),
+    ).catch(console.error)
+}
+
+export async function storeResource(url: string) {
     const resource = await getVersions(url)
     const recentVersion = resource.recentVersion()
 
@@ -118,40 +113,24 @@ export async function storeResource(
     }
 
     const result = await TryAsync(async () => {
-        const response = await (async () => {
-            if (storedDataUrlOrFileUrl) {
-                const bufferFromStoredDataUrl = dataURLToBuffer(storedDataUrlOrFileUrl)
+        const {
+            headers: { 'content-type': mimetype, 'content-length': size },
+        } = await got.head(url)
 
-                if (bufferFromStoredDataUrl) {
-                    return bufferFromStoredDataUrl
-                }
-            }
-
-            const storedFileUrl = storedDataUrlOrFileUrl
-
-            const {
-                headers: { 'content-type': mimetype, 'content-length': size },
-            } = await got.head(storedFileUrl || url)
-
-            if (size && parseInt(size) > config.resource.maxSize) {
-                return
-            }
-
-            const { body } = await got.get(storedFileUrl || url, { encoding: null })
-
-            if (body.length > config.resource.maxSize) {
-                return
-            }
-
-            return { buffer: body, mimetype }
-        })()
-
-        if (!response) {
+        if (size && parseInt(size) > config.resource.maxSize) {
             return
         }
 
+        const { body } = await got.get(url, { encoding: null })
+
+        if (!body.length || body.length > config.resource.maxSize) {
+            return
+        }
+
+        const response = { buffer: body, mimetype }
+
         const hash = getHash(response.buffer)
-        const matchedVersion = resource.versions.find(v => v.hash === hash)
+        const matchedVersion = resource.findByHash(hash)
 
         if (matchedVersion) {
             return withRelativeURL(matchedVersion)

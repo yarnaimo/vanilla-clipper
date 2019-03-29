@@ -8,6 +8,8 @@ import * as sig from 'signale'
 export { got, sig }
 export { filenamifyUrl, devices }
 
+export const isNode = () => typeof process === 'object'
+
 const filenamifyUrl = require('filenamify-url') as (url: string, options?: any) => string
 
 const devices = require('puppeteer-core/DeviceDescriptors') as {

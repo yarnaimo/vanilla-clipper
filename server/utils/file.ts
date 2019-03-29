@@ -96,11 +96,14 @@ export const Directory = (path: string) => {
 }
 
 export const dataDirectory = Directory(dataDirectoryPath)
-export const dbDirectory = dataDirectory.subdir('db')
+
 export const pagesDirectory = dataDirectory.subdir('pages')
 export const pagesMainDirectory = pagesDirectory.subdir('main')
+
 export const resourcesDirectory = dataDirectory.subdir('resources')
+
 export const configFilePath = dataDirectory.childPath('config.js')
+export const pouchdbConfigFilePath = dataDirectory.childPath('pouchdb-config.json')
 
 export function getHash(buffer: Buffer) {
     const hash = createHash('sha256')

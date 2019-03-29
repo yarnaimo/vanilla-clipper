@@ -34,8 +34,12 @@ jsdomPlugins.add(dom => {
     const els = dom.finder(
         'ins.adsbygoogle',
         'a[href^="https://rs.adapf.com"]',
+        'iframe[id^="google_ads_iframe_"]',
+        'iframe[src^="https://bid.g.doubleclick.net"]',
         'iframe[src^="https://tpc.googlesyndication.com"]',
         'iframe[src^="https://googleads.g.doubleclick.net"]',
+        'iframe[src^="https://img.ak.impact-ad.jp"]',
+        'iframe[src*=".fls.doubleclick.net/"]',
     )
 
     els.forEach(el => el.remove())
