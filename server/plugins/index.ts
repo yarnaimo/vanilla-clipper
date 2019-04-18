@@ -1,3 +1,4 @@
+import { twimgUrlToOrig } from '@yarnaimo/twimo'
 import { VPluginStore } from './VPluginStore'
 
 export const jsdomPlugins = new VPluginStore()
@@ -43,6 +44,15 @@ jsdomPlugins.add(dom => {
     )
 
     els.forEach(el => el.remove())
+})
+
+// twimg urls to orig
+jsdomPlugins.add(dom => {
+    const els = dom.finder('img[src^="https://pbs.twimg.com/media/"]')
+
+    els.forEach((el: any) => {
+        el.src = twimgUrlToOrig(el.src)
+    })
 })
 
 // relative url to absolute

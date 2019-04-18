@@ -8,7 +8,7 @@ import { IFrameData, IMetadata } from '../types'
 import { optimizeCSS } from '../utils/css'
 import { buildVAttrSelector, ElementSelector, selectorsToString } from '../utils/element'
 import { dataURLPattern } from '../utils/file'
-import { getTwitterVideoURL as getVideoURLInTweet } from '../utils/twitter'
+import { getVideoURLInTweet } from '../utils/twitter'
 
 export type HTMLGenerationResult = { url: string; html: string; createdAt?: DateTime }
 

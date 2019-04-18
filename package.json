@@ -41,7 +41,7 @@
   "dependencies": {
     "@postlight/mercury-parser": "^2.0.0",
     "@yarnaimo/rain": "latest",
-    "@yarnaimo/twimo": "^1.3.0",
+    "@yarnaimo/twimo": "^1.4.0",
     "appdata-path": "^1.0.0",
     "chrome-launcher": "^0.10.5",
     "css-tree": "^1.0.0-alpha.29",
