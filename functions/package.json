@@ -1,0 +1,46 @@
+{
+  "name": "functions",
+  "version": "0.0.0",
+  "private": true,
+  "main": "dist/functions/src/index.js",
+  "scripts": {
+    "build": "yarn --cwd .. build",
+    "debug": "node --inspect -r ts-node/register/transpile-only ../node_modules/.bin/micro-dev src/debug.ts",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log",
+    "serve": "yarn build && firebase serve --only functions",
+    "shell": "yarn build && firebase functions:shell",
+    "start": "yarn shell"
+  },
+  "dependencies": {
+    "@postlight/mercury-parser": "^2.1.0",
+    "@yarnaimo/rain": "latest",
+    "@yarnaimo/twimo": "^1.4.0",
+    "bluespark": "^0.0.8",
+    "css-tree": "^1.0.0-alpha.29",
+    "firebase": "^5.11.1",
+    "firebase-admin": "~7.3.0",
+    "firebase-functions": "^2.3.0",
+    "fs-extra": "^7.0.1",
+    "html-minifier": "^4.0.0",
+    "jsdom": "^15.0.0",
+    "mime-types": "^2.1.24",
+    "p-limit": "^2.2.0",
+    "puppeteer": "^1.15.0",
+    "tldjs": "^2.3.1",
+    "trysafe": "^0.0.3",
+    "ulid": "^2.3.0"
+  },
+  "devDependencies": {
+    "@types/css-tree": "^1.0.0",
+    "@types/fs-extra": "^5.1.0",
+    "@types/html-minifier": "^3.5.3",
+    "@types/jsdom": "^12.2.3",
+    "@types/mime-types": "^2.1.0",
+    "@types/puppeteer": "^1.12.4",
+    "@types/tldjs": "^2.3.0"
+  },
+  "engines": {
+    "node": "10"
+  }
+}

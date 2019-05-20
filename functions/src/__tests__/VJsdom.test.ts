@@ -1,17 +1,8 @@
 import { VJsdom } from '../core/VJsdom'
 import { buildVAttrSelector } from '../utils/element'
-import { removeResources } from './utils'
 
 const src = '/src-path'
 const href = '/href-path'
-
-beforeAll(async () => {
-    await removeResources()
-})
-
-afterAll(async () => {
-    await removeResources()
-})
 
 // test('metadata', () => {
 //     const dom = new VJsdom(

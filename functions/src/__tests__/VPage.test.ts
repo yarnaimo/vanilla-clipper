@@ -1,43 +1,33 @@
-import { Frame, Page } from 'puppeteer-core'
-import { VBrowser } from '../core/VBrowser'
-import { IMetadata } from '../types'
+import { Frame, Page } from 'puppeteer'
+import { getVPage, VPage } from '../core/VPage'
+import { PR } from '../types'
 import { buildVAttrSelector } from '../utils/element'
-import { launch, removeResources, servedFileURL } from './utils'
+import { launch, servedFileURL } from './utils'
 
-let vBrowser: VBrowser
-let metadata: IMetadata
-let html: string
+let result: PR<ReturnType<typeof VPage>['save']>
 let savedPage: Page
 let childFrame: Frame
 
+launch()
+
 beforeAll(async () => {
-    await removeResources()
+    const vPage = await getVPage({})
+    await vPage.frame.goto(servedFileURL('page.html'))
 
-    vBrowser = await launch()
-    const vPage = await vBrowser.newPage()
-    await vPage.goto(servedFileURL('page.html'))
-
-    const clipped = await vPage._clip()
-    await vPage.close()
-
-    // metadata = clipped.metadata!
-    html = clipped.html
+    result = await vPage.save({})
+    await vPage.frame.browser().close()
 })
 
-beforeEach(async () => {
-    savedPage = (await vBrowser.newPage()).frame
-    await savedPage.setContent(html)
+beforeAll(async () => {
+    const savedVPage = await getVPage({}, true)
+    savedPage = savedVPage.frame
+
+    await savedPage.goto(servedFileURL(result.path!))
     childFrame = savedPage.frames()[1]
 })
 
-afterEach(async () => {
-    await savedPage.close()
-})
-
-afterAll(async done => {
-    await removeResources()
-    await vBrowser.close()
-    done()
+afterAll(async () => {
+    await savedPage.browser().close()
 })
 
 // test('resource db', async () => {
@@ -93,7 +83,7 @@ test('[src] attribute', async () => {
     const src = await savedPage.$eval(`img${buildVAttrSelector.src()}`, img =>
         img.getAttribute('src'),
     )
-    expect(src).toMatch(/\.\.\/resources\/\d{8}\/.{26}\.png/)
+    expect(src).toMatch(/\.\.\/resources\/[\w-]+\.png/)
 })
 
 test('iframe - element count', async () => {

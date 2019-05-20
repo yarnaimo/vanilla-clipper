@@ -2,12 +2,14 @@ import csstree from 'css-tree'
 import { readFileSync } from 'fs-extra'
 import { JSDOM } from 'jsdom'
 import { extractOrFetchCSS, optimizeCSS } from '../utils/css'
-import { publicFilePath, servedFileURL } from './utils'
+import { launch, publicFilePath, servedFileURL } from './utils'
 
-const iconURL = servedFileURL('icon.png')
+launch()
+
+// const iconURL = servedFileURL('icon.png')
 const cssURL = servedFileURL('main.css')
-const iconBuffer = readFileSync(publicFilePath('icon.png'))
-const iconDataURL = `data:image/png;base64,${iconBuffer.toString('base64')}`
+// const iconBuffer = readFileSync(publicFilePath('icon.png'))
+// const iconDataURL = `data:image/png;base64,${iconBuffer.toString('base64')}`
 const cssFileText = readFileSync(publicFilePath('main.css'), 'utf8')
 
 describe('optimizeCSS()', () => {
