@@ -256,14 +256,7 @@
   resolved "https://registry.yarnpkg.com/@types/yargs/-/yargs-12.0.1.tgz#c5ce4ad64499010ae4dc2acd9b14d49749a44233"
   integrity sha512-UVjo2oH79aRNcsDlFlnQ/iJ67Jd7j6uSg7jUJP/RZ/nUjAh5ElmnwlD5K/6eGgETJUgCHkiWn91B8JjXQ6ubAw==
 
-"@yarnaimo/rain@^0.1.2":
-  version "0.1.2"
-  resolved "https://registry.yarnpkg.com/@yarnaimo/rain/-/rain-0.1.2.tgz#1dbfccaebf0f6048d6d5c77f8e57aa97e721bfa6"
-  integrity sha512-M4LK4jZIUB2crRC4wDGH57qAiWfCOjV8QEeXyfxrdNz6iFlYpPLG+iKLcIYLAEil7Fh4IAVKrc54xCt33OfkMA==
-  dependencies:
-    class-validator "^0.9.1"
-
-"@yarnaimo/rain@latest":
+"@yarnaimo/rain@0.2.7":
   version "0.2.7"
   resolved "https://registry.yarnpkg.com/@yarnaimo/rain/-/rain-0.2.7.tgz#0ed5b9aef8b5d5d5b6d55711f8c1669d1ce9aca6"
   integrity sha512-8VOaDHtFg/9bvrAqU5ZIpmxGHlAurOFN0wRgA0I7RL8iwV50zuB9m4SyeL5lPuRjJDErJnlZWZWolukVnQeQyw==
@@ -274,6 +267,13 @@
     io-ts "^1.8.2"
     io-ts-types "^0.4.2"
     luxon "^1.11.3"
+
+"@yarnaimo/rain@^0.1.2":
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/@yarnaimo/rain/-/rain-0.1.2.tgz#1dbfccaebf0f6048d6d5c77f8e57aa97e721bfa6"
+  integrity sha512-M4LK4jZIUB2crRC4wDGH57qAiWfCOjV8QEeXyfxrdNz6iFlYpPLG+iKLcIYLAEil7Fh4IAVKrc54xCt33OfkMA==
+  dependencies:
+    class-validator "^0.9.1"
 
 "@yarnaimo/tss@latest":
   version "0.0.2"
