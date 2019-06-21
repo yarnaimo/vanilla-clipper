@@ -2,7 +2,7 @@
 // import { copyFileSync, copySync } from 'fs-extra'
 // import { homedir } from 'os'
 // import { ulid } from 'ulid'
-// import { createPageDoc } from '../../src/models/page'
+// import { createPageDoc } from '../../web/src/models/page'
 // import { sig } from '../utils'
 // import {
 //     configFilePath,

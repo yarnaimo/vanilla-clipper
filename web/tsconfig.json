@@ -1,0 +1,28 @@
+{
+  "extends": "@yarnaimo/tss/tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "es2018"
+    ],
+    "types": [
+      "@types/node",
+      "@types/jest",
+      "@emotion/core"
+    ],
+    "allowJs": true,
+    "declaration": false,
+    "module": "esnext",
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "preserve"
+  },
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

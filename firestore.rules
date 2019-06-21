@@ -1,0 +1,19 @@
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function adminPath() {
+      return /databases/$(database)/documents/admin/$(request.auth.uid)
+    }
+
+    function isAdmin() {
+      return exists(adminPath());
+    }
+
+    match /articles/{article} {
+      allow read: if isAdmin();
+    }
+
+    match /notes/{note} {
+      allow read, write: if isAdmin();
+    }
+  }
+}

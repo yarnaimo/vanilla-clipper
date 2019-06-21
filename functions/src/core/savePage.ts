@@ -1,13 +1,16 @@
 import { dayjs, t } from 'bluespark'
 import { firestore } from 'firebase-admin'
 import tldjs from 'tldjs'
-import { Article } from '../../../src/models/article'
-import { browserTask } from '../../../src/models/browserTask'
+import { Article } from '../../../web/src/models/article'
+import { BrowserTask } from '../../../web/src/models/browserTask'
 import { PR } from '../types'
 import { db } from '../utils/firebase'
 import { getVPage, VPage } from './VPage'
 
-export const toDocData = (results: PR<ReturnType<typeof VPage>['save']>[], compact = false) => {
+export const toDocData = (
+    results: PR<ReturnType<typeof VPage>['save']>[],
+    compact = false,
+) => {
     const firstResult = results[0]
     const { hostname, domain } = tldjs.parse(firstResult.url)
 
@@ -43,10 +46,13 @@ export const toDocData = (results: PR<ReturnType<typeof VPage>['save']>[], compa
     }
 }
 
-export const savePage = async ({
-    launchOptions,
-    request: { urls, accountLabel, ...options },
-}: t.TypeOf<typeof browserTask.codec>) => {
+export const savePage = async (
+    id: string,
+    {
+        launchOptions,
+        request: { urls, accountLabel, ...options },
+    }: t.TypeOf<typeof BrowserTask.codec>,
+) => {
     const vPage = await getVPage(launchOptions)
 
     const results = await urls.reduce(async (promise, url) => {
@@ -60,7 +66,7 @@ export const savePage = async ({
 
     const docData = toDocData(results, options.compact)
 
-    const doc = Article.within(db).doc()
+    const doc = Article.within(db).doc(id)
     await Article(doc).set(docData)
 
     return { doc, docData }

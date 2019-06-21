@@ -10,6 +10,8 @@ export interface IConfig {
         tokenSecret: string
         userId: string
     }
+    databaseURL: string
+    regions: string[]
     resource: { maxSize: number }
     sites: ISite[]
 }
@@ -23,7 +25,11 @@ export interface ISite {
         [label: string]:
             | {
                   isLoggedIn?: boolean
-                  [key: string]: boolean | string | (() => string | Promise<string>) | undefined
+                  [key: string]:
+                      | boolean
+                      | string
+                      | (() => string | Promise<string>)
+                      | undefined
               }
             | undefined
     }
@@ -34,5 +40,6 @@ const sites = configModule.sites.map(Site)
 
 export const config = {
     ...configModule,
-    findSite: (url: string) => sites.find(s => getDomain(s.url) === getDomain(url)),
+    findSite: (url: string) =>
+        sites.find(s => getDomain(s.url) === getDomain(url)),
 }

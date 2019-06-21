@@ -1,15 +1,21 @@
+import { createOnCallFn } from 'bluespark/dist/functions'
 import admin from 'firebase-admin'
+import { region } from 'firebase-functions'
+import config from '../.config/default'
 const serviceAccount = require('../.config/serviceAccountKey.json')
 
+export const isDev = process.env.NODE_ENV !== 'production'
+
 admin.initializeApp(
-    serviceAccount
+    isDev
         ? {
               credential: admin.credential.cert(serviceAccount),
-              databaseURL: 'https://frais-test.firebaseio.com',
+              databaseURL: config.databaseURL,
           }
         : undefined,
 )
-const db = admin.firestore()
-const bucket = admin.storage().bucket()
 
-export { admin, db, bucket }
+export const db = admin.firestore()
+export const bucket = admin.storage().bucket()
+export const getRegion = () => region(...config.regions)
+export const onCall = createOnCallFn(getRegion())

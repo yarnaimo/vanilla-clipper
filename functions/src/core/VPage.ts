@@ -1,7 +1,10 @@
 import { t } from '@yarnaimo/rain'
 import puppeteer, { Page } from 'puppeteer'
 import { ulid } from 'ulid'
-import { ClipRequest, VLaunchOptions } from '../../../src/models/browserTask'
+import {
+    ClipRequest,
+    VLaunchOptions,
+} from '../../../web/src/models/browserTask'
 import { config } from '../config-store'
 import { bucket } from '../utils/firebase'
 import { parseMercury } from '../utils/mercury'
@@ -10,7 +13,12 @@ import { VFrame } from './VFrame'
 const vPageInstances = new Map<string, ReturnType<typeof VPage>>()
 
 export const getVPage = async (
-    { dumpio = false, headless = true, lang = 'ja', device }: t.TypeOf<typeof VLaunchOptions>,
+    {
+        dumpio = false,
+        headless = true,
+        lang = 'ja',
+        device,
+    }: t.TypeOf<typeof VLaunchOptions>,
     forceNew = false,
 ) => {
     const key = JSON.stringify({ dumpio, headless, lang, device })

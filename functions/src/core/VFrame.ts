@@ -1,11 +1,14 @@
 import { t } from 'bluespark'
 import { Frame, Page, Viewport } from 'puppeteer'
-import { ClipRequest } from '../../../src/models/browserTask'
+import { ClipRequest } from '../../../web/src/models/browserTask'
 import { extractOrFetchCSS, optimizeCSS } from '../utils/css'
 import { VDocument } from './VDocument'
 import { VJsdom } from './VJsdom'
 
-export const VFrame = <F extends Frame | Page, P extends boolean = F extends Page ? true : false>(
+export const VFrame = <
+    F extends Frame | Page,
+    P extends boolean = F extends Page ? true : false
+>(
     frame: F,
     isPage: P,
 ) => ({
@@ -48,7 +51,11 @@ export const VFrame = <F extends Frame | Page, P extends boolean = F extends Pag
 
         const originalDocument = await VDocument(this.frame, () => document)
 
-        const height = await originalDocument.scrollToBottom({ element, scroll, maxScrolls })
+        const height = await originalDocument.scrollToBottom({
+            element,
+            scroll,
+            maxScrolls,
+        })
 
         this.setViewportHeight(height)
 
@@ -62,7 +69,10 @@ export const VFrame = <F extends Frame | Page, P extends boolean = F extends Pag
             await originalDocument.embedContentOfShadowDOMs()
         }
 
-        const { html: originalHTML, location } = await originalDocument.getHTML()
+        const {
+            html: originalHTML,
+            location,
+        } = await originalDocument.getHTML()
         const sheetDataList = await originalDocument.getSheetDataList()
 
         const dom = new VJsdom(originalHTML, { url: location.href })
@@ -76,7 +86,9 @@ export const VFrame = <F extends Frame | Page, P extends boolean = F extends Pag
             return dom.generate()
         }
 
-        const m = location.href.match(/https:\/\/mobile\.twitter\.com\/.+\/status\/(\d+)/)
+        const m = location.href.match(
+            /https:\/\/mobile\.twitter\.com\/.+\/status\/(\d+)/,
+        )
         if (m) {
             await dom.embedTwitterVideo(m[1])
         }
@@ -84,7 +96,9 @@ export const VFrame = <F extends Frame | Page, P extends boolean = F extends Pag
         await Promise.all([
             (async () => {
                 const iframes = dom.getIframes()
-                const iframeDataList = await originalDocument.clipIframes(iframes)
+                const iframeDataList = await originalDocument.clipIframes(
+                    iframes,
+                )
 
                 dom.embedIFrameContents(iframeDataList)
             })(),

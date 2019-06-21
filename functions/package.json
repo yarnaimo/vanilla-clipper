@@ -14,11 +14,8 @@
   },
   "dependencies": {
     "@postlight/mercury-parser": "^2.1.0",
-    "@yarnaimo/rain": "latest",
     "@yarnaimo/twimo": "^1.4.0",
-    "bluespark": "^0.0.8",
     "css-tree": "^1.0.0-alpha.29",
-    "firebase": "^5.11.1",
     "firebase-admin": "~7.3.0",
     "firebase-functions": "^2.3.0",
     "fs-extra": "^7.0.1",

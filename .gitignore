@@ -30,4 +30,4 @@ dist/**/*
 node_modules
 sw.*
 
-.vanilla-clipper
+.firebaserc

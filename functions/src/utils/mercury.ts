@@ -1,5 +1,5 @@
 import { t } from 'bluespark'
-import { stringOrNull } from '../../../src/types'
+import { stringOrNull } from '../../../web/src/models/types'
 const Mercury = require('@postlight/mercury-parser')
 
 export const MercuryResult = t.type({
