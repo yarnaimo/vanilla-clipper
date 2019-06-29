@@ -1,9 +1,9 @@
 import { navigate } from 'hookrouter'
-import { FC } from 'react'
+import { FC, useMemo } from 'react'
 import { useDocumentOnce } from 'react-firebase-hooks/firestore'
 import { $, $$ } from 'tshx'
 import { Editor } from '../../components/Editor'
-import { LoadingSpinner } from '../../components/LoadingSpinner'
+import { LoadingOrError } from '../../components/LoadingOrError'
 import { Note } from '../../models/note'
 import { db } from '../../utils/firebase'
 
@@ -25,16 +25,13 @@ export const NoteC: FC<Props> = props => {
 
 const _Note: FC<Props> = ({ id }) => {
     const [ss, loading, error] = useDocumentOnce(notes.doc(id))
+    const note = useMemo(() => ss && Note.ss(ss), [ss])
 
-    if (loading) {
-        return $(LoadingSpinner, {})()
+    if (loading || error) {
+        return $(LoadingOrError, { loading, error })()
     }
 
-    if (ss) {
-        const note = Note.ss(ss)
-
-        return $(Editor, { data: note ? (note.data as any) : undefined })()
-    }
-
-    return $$(error ? error.toString() : '')
+    return $(Editor, {
+        data: note ? (note.data as any) : undefined,
+    })()
 }

@@ -10,6 +10,7 @@
             "name": "Launch Chrome",
             "url": "http://localhost:3000",
             "breakOnLoad": false,
+            "userDataDir": false,
         },
         {
             "type": "chrome",

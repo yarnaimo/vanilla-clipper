@@ -6,12 +6,15 @@ import { $ } from 'tshx'
 import { App } from './App'
 import './index.scss'
 import * as serviceWorker from './serviceWorker'
+import { Container } from './Store'
 import { theme } from './utils/color'
 
 render(
-    $(ThemeProvider, {
-        options: theme,
-    })($(App, {})()),
+    $(Container, {})(
+        $(ThemeProvider, {
+            options: theme,
+        })($(App, {})()),
+    ),
     document.getElementById('root'),
 )
 

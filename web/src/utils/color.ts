@@ -5,5 +5,5 @@ export const theme = {
     onPrimary: '#004466',
     secondary: '#fb837f',
     onSecondary: '#ffffff',
-    // textPrimaryOnBackground: '#ffffff',
+    // textPrimaryOnBackground: '#ffffff',onSurface
 }

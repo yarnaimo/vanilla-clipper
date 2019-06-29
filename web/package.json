@@ -21,6 +21,7 @@
     "rmwc": "^5.5.2",
     "signale": "^1.4.0",
     "tshx": "^0.0.3",
+    "undux": "^5.0.0-beta.22",
     "use-media": "^1.3.0"
   },
   "devDependencies": {

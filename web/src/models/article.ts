@@ -39,7 +39,8 @@ const TweetCompact = t.type({
     tweetId: t.string,
     retweetCount: t.number,
     favCount: t.number,
-    imageDownloadUrls: t.array(t.string),
+    imageDownloadUrls: t.union([t.array(t.string), t.null]),
+    videoDownloadUrl: stringOrNull,
 
     userId: t.string,
     screenName: t.string,
