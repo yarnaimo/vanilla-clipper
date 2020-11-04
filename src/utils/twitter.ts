@@ -1,5 +1,5 @@
 import { is } from '@yarnaimo/rain'
-import { TwimoClient } from '@yarnaimo/twimo'
+import { twget, Twimo } from '@yarnaimo/twimo'
 import { Status } from 'twitter-d'
 import { config } from '../config-store'
 
@@ -10,8 +10,16 @@ export async function getTwitterVideoURL(id: string) {
         return
     }
 
-    const client = new TwimoClient(config.twitter)
-    const { extended_entities } = await client.get<Status>('statuses/show', { id })
+    const { consumerKey, consumerSecret, token, tokenSecret } = config.twitter
+    const twimo = Twimo({
+        consumerKey,
+        consumerSecret,
+    })({
+        token,
+        tokenSecret,
+    })
+
+    const { extended_entities } = await twget<Status>(twimo, 'statuses/show', { id })
 
     if (
         !extended_entities ||
